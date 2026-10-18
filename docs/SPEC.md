@@ -382,3 +382,11 @@ Where they disagree, the code wins.
     `senseai-profiles` plus the curate libraries. Curate reads the profiles checkout from
     `SENSEAI_PROFILES_REPO` (it used to find it relative to its own file), and its model call
     goes through research's single client factory.
+16. **EC2 install (phase 6).** `scripts/install_research_ec2.sh` installs into the viewer's
+    shared `~/senseai/.venv` with `uv pip install --override`, so the stack's own checkouts under
+    `~/senseai/` win over the git pins in this package's dependencies (the same conflict the
+    viewer's setup avoids by installing them editable). The server runs under `nohup` from
+    `research-ctl.sh` rather than a systemd unit, so the install needs no root; it uses sudo only,
+    and only without a prompt, to add `RESEARCH_URL` to `/etc/senseai-viewer.env` and restart the
+    viewer. `tests/test_ec2_scripts.py` runs both scripts in a sandbox HOME, and with
+    `SENSEAI_VIEWER_CMD` set checks `/research` behind the viewer password.
