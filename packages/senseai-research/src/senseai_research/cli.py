@@ -125,7 +125,7 @@ def cmd_backup(a: argparse.Namespace, cfg: Settings) -> int:
     print(f"backup: {out}")
     s3 = a.s3 or cfg.curate_s3
     if s3:
-        from senseai_profiles.curate.cache import sync_s3
+        from senseai_research.curate.cache import sync_s3
 
         n = sync_s3(out.parent, s3.rstrip("/") + "/ledger", direction="push")
         n += sync_s3(cfg.cache_dir, s3.rstrip("/") + "/curate-cache", direction="push")

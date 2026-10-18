@@ -375,3 +375,10 @@ Where they disagree, the code wins.
     The live smoke run (spec P3) has not been made: there was no key.
 14. **Strict tool schemas** use `anyOf: [T, null]` for optional fields. Strict mode supports
     `anyOf`; JSON-Schema type arrays (`["string", "null"]`) are not in its supported list.
+15. **Curate move (P5).** `senseai_profiles.curate` became a deprecated alias in profiles: each
+    submodule *is* the moved module, and the import warns. `senseai-library` in profiles forwards
+    to senseai-research, or prints how to install it (`--help` exits 0 without it). Profiles keeps
+    its `curate` extra so existing installs still resolve. Research now depends on plain
+    `senseai-profiles` plus the curate libraries. Curate reads the profiles checkout from
+    `SENSEAI_PROFILES_REPO` (it used to find it relative to its own file), and its model call
+    goes through research's single client factory.
