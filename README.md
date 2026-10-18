@@ -12,18 +12,25 @@ the correction does to the robot, and sign off on a library change.
 
 The full design is in [`docs/SPEC.md`](docs/SPEC.md).
 
-> **Status: phase 2 of 6.** The ledger works (import, export, history, write rules). Impact
-> previews work: what a library change does to Panther's profile, reflex and world prior. So do
-> experiments: the change runs on real night recordings through the bench, compared with an
-> unchanged baseline. Changes wait for a person's approval and then become a pull request on
-> profiles. The research assistant runs in the terminal (`senseai-research ask`); in this
-> phase it can search the ledger, read claims and their passages, and read experiment results.
-> Fetching papers, previews, experiments and proposals from the chat come next, then the
-> `/research` page.
+> **Status: phase 3 of 6.** The ledger, impact previews, bench experiments, approvals and
+> library PRs all work, and so does the research assistant, in the terminal (`senseai-research
+> ask`). The `/research` page in the viewer comes in phase 4.
 
 ## For a researcher
 
-Phase 1 has no web page yet. On the EC2 box, ask the operator to run:
+Until the web page arrives (phase 4), the assistant runs in a terminal on the EC2 box:
+
+```bash
+senseai-research ask
+you> Where does −0.74 come from, and is it the right number for a robot camera?
+```
+
+It looks the value up in the ledger, fetches the open-access paper and quotes the passage word
+for word. It can propose a correction, work out what the correction does to Panther, run it on
+night recordings, and propose the library change. Every proposal shows as a card. Type
+`:approve <id> <your reason>` or `:reject <id> <your reason>`; a "yes" in the chat does not count.
+
+Without the assistant, the same ledger is available directly:
 
 ```bash
 senseai-research claims --status unverified        # the values with no checked quote yet

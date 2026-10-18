@@ -32,9 +32,11 @@ from senseai_research.agent.toolkit import (
     ToolSpec,
     validate,
 )
+from senseai_research.agent.tools_compute import COMPUTE_TOOLS
 from senseai_research.agent.tools_read import READ_TOOLS
+from senseai_research.agent.tools_write import WRITE_TOOLS
 
-TOOLS: tuple[ToolSpec, ...] = (*READ_TOOLS,)  # compute and write tools: next PR
+TOOLS: tuple[ToolSpec, ...] = (*READ_TOOLS, *COMPUTE_TOOLS, *WRITE_TOOLS)
 BY_NAME: dict[str, ToolSpec] = {t.name: t for t in TOOLS}
 
 
