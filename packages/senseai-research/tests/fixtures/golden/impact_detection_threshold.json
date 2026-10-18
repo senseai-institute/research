@@ -1,0 +1,200 @@
+{
+ "consumers": [
+  "panther.event.attention (vision_deficit_boost)",
+  "panther.frame.gain_lut (vision_supply_vs_demand)",
+  "panther_vision.event.attention (vision_deficit_boost)",
+  "panther_vision.frame.gain_lut (vision_supply_vs_demand)"
+ ],
+ "reflex": [
+  {
+   "arm": "panther_prior",
+   "commit_threshold_new": 0.5,
+   "commit_threshold_old": 0.5,
+   "profile": "panther_vision",
+   "theta_new": 2.6,
+   "theta_old": 2.6
+  },
+  {
+   "arm": "panther_vision",
+   "commit_threshold_new": 0.5,
+   "commit_threshold_old": 0.5,
+   "profile": "panther_vision",
+   "theta_new": 2.6,
+   "theta_old": 2.6
+  },
+  {
+   "arm": "panther_fused",
+   "commit_threshold_new": 0.5,
+   "commit_threshold_old": 0.5,
+   "profile": "panther_vision",
+   "theta_new": 2.6,
+   "theta_old": 2.6
+  },
+  {
+   "arm": "panther",
+   "commit_threshold_new": 0.6,
+   "commit_threshold_old": 0.6,
+   "profile": "panther",
+   "theta_new": 3.12,
+   "theta_old": 3.12
+  },
+  {
+   "arm": "null_profile",
+   "commit_threshold_new": 0.5,
+   "commit_threshold_old": 0.5,
+   "profile": "null",
+   "theta_new": 2.6,
+   "theta_old": 2.6
+  }
+ ],
+ "rows": [
+  {
+   "delta_pct": 5.802047781569965,
+   "field": "attention",
+   "new": 1.1923076923076923,
+   "old": 1.126923076923077,
+   "point": "at 0.0398 lux",
+   "profile": "panther",
+   "section": "event"
+  },
+  {
+   "delta_pct": 34.79623824451412,
+   "field": "attention",
+   "new": 1.4333333333333333,
+   "old": 1.0633333333333332,
+   "point": "at 0.136 lux",
+   "profile": "panther",
+   "section": "event"
+  },
+  {
+   "delta_pct": 16.666666666666675,
+   "field": "attention",
+   "new": 1.1666666666666667,
+   "old": 1.0,
+   "point": "at 0.464 lux",
+   "profile": "panther",
+   "section": "event"
+  },
+  {
+   "delta_pct": -100.0,
+   "field": "gain_lut",
+   "new": 0.0,
+   "old": 0.34000000000000014,
+   "point": "at 0.0398 lux",
+   "profile": "panther",
+   "section": "frame"
+  },
+  {
+   "delta_pct": -84.73282442748094,
+   "field": "gain_lut",
+   "new": 0.13333333333333322,
+   "old": 0.8733333333333334,
+   "point": "at 0.136 lux",
+   "profile": "panther",
+   "section": "frame"
+  },
+  {
+   "delta_pct": -33.33333333333335,
+   "field": "gain_lut",
+   "new": 0.6666666666666665,
+   "old": 1.0,
+   "point": "at 0.464 lux",
+   "profile": "panther",
+   "section": "frame"
+  },
+  {
+   "delta_pct": 5.802047781569965,
+   "field": "attention",
+   "new": 1.1923076923076923,
+   "old": 1.126923076923077,
+   "point": "at 0.0398 lux",
+   "profile": "panther_vision",
+   "section": "event"
+  },
+  {
+   "delta_pct": 34.79623824451412,
+   "field": "attention",
+   "new": 1.4333333333333333,
+   "old": 1.0633333333333332,
+   "point": "at 0.136 lux",
+   "profile": "panther_vision",
+   "section": "event"
+  },
+  {
+   "delta_pct": 16.666666666666675,
+   "field": "attention",
+   "new": 1.1666666666666667,
+   "old": 1.0,
+   "point": "at 0.464 lux",
+   "profile": "panther_vision",
+   "section": "event"
+  },
+  {
+   "delta_pct": -100.0,
+   "field": "gain_lut",
+   "new": 0.0,
+   "old": 0.34000000000000014,
+   "point": "at 0.0398 lux",
+   "profile": "panther_vision",
+   "section": "frame"
+  },
+  {
+   "delta_pct": -84.73282442748094,
+   "field": "gain_lut",
+   "new": 0.13333333333333322,
+   "old": 0.8733333333333334,
+   "point": "at 0.136 lux",
+   "profile": "panther_vision",
+   "section": "frame"
+  },
+  {
+   "delta_pct": -33.33333333333335,
+   "field": "gain_lut",
+   "new": 0.6666666666666665,
+   "old": 1.0,
+   "point": "at 0.464 lux",
+   "profile": "panther_vision",
+   "section": "frame"
+  }
+ ],
+ "summaries": [
+  {
+   "changed_points": 3,
+   "field": "attention",
+   "max_abs_delta_pct": 34.79623824451412,
+   "profile": "panther",
+   "rule": "vision_deficit_boost",
+   "section": "event",
+   "sentence": "panther: the event camera's low-light boost starts below 0.464 lux (was 0.136 lux) and peaks at x1.43 (was x1.13)."
+  },
+  {
+   "changed_points": 3,
+   "field": "gain_lut",
+   "max_abs_delta_pct": 100.0,
+   "profile": "panther",
+   "rule": "vision_supply_vs_demand",
+   "section": "frame",
+   "sentence": "panther: the frame head trusts the camera image at half confidence down to 0.316 lux (was 0.0575 lux). Below that, Panther leans less on the frame."
+  },
+  {
+   "changed_points": 3,
+   "field": "attention",
+   "max_abs_delta_pct": 34.79623824451412,
+   "profile": "panther_vision",
+   "rule": "vision_deficit_boost",
+   "section": "event",
+   "sentence": "panther_vision: the event camera's low-light boost starts below 0.464 lux (was 0.136 lux) and peaks at x1.43 (was x1.13)."
+  },
+  {
+   "changed_points": 3,
+   "field": "gain_lut",
+   "max_abs_delta_pct": 100.0,
+   "profile": "panther_vision",
+   "rule": "vision_supply_vs_demand",
+   "section": "frame",
+   "sentence": "panther_vision: the frame head trusts the camera image at half confidence down to 0.316 lux (was 0.0575 lux). Below that, Panther leans less on the frame."
+  }
+ ],
+ "unchanged_fields": 6,
+ "world_reached": false
+}

@@ -337,9 +337,12 @@ Where they disagree, the code wins.
    through `--profiles-repo`.
 5. **World prior provenance kinds** are `physics | measured | proposed`, not `measured |
    default`. The impact report shows the kind as written. `import senseai_world.prior` pulls in
-   torch (`prior/__init__.py` imports the model), so `impact/world.py` loads `prior/params.py` on
-   its own (it needs only PyYAML). When world is not installed, it falls back to a copy of
-   `params.py` from 8ec2cfd, which a test keeps in sync when world is present.
+   torch (`prior/__init__.py` imports the model), so `impact/world.py` loads only `prior/params.py`
+   (it needs nothing beyond PyYAML). It finds that file in the installed package, in the stack
+   checkout `$SENSEAI_STACK_DIR/world`, or at `SENSEAI_WORLD_PARAMS`. World is proprietary and this
+   repo is public, so no copy is vendored. If world is not on the machine, the impact record says
+   "not checked" rather than guessing. The tests use a small test double with the same interface
+   (`tests/fixtures/world/params.py`).
 6. **The felidae detection threshold is `confidence: high` in the YAML.** It is still
    `unverified` in the ledger: CITATIONS.md marks its source as read only as an abstract, and
    there is no full-text quote. `Claim.library_confidence` keeps the library's own label.

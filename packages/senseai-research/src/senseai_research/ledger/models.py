@@ -278,6 +278,78 @@ class Approval(Record):
         return v.strip()
 
 
+class ProfileRow(BaseModel):
+    """One derived value that changes: a gain-LUT point, an attention weight, a scalar."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    profile: str
+    section: str  # head name or "reflex"
+    field: str
+    point: str = ""  # "at 0.1 lux", a weight name, or "" for a scalar
+    old: float | str | None = None
+    new: float | str | None = None
+    delta_pct: float | None = None
+
+
+class FieldSummary(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    profile: str
+    section: str
+    field: str
+    rule: str
+    changed_points: int
+    max_abs_delta_pct: float | None = None
+    sentence: str
+
+
+class ReflexRow(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    arm: str
+    profile: str
+    commit_threshold_old: float
+    commit_threshold_new: float
+    theta_old: float
+    theta_new: float
+
+
+class WorldRow(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    param: str
+    old: float
+    new: float
+    kind_old: str
+    kind_new: str
+    source_new: str
+    measured: bool
+    changed: bool
+
+
+class Impact(Record):
+    """What a candidate library change does, computed by code (N4). Stored; never recomputed."""
+
+    library_path: str
+    library_file: str
+    old_quantity: dict[str, Any]
+    new_quantity: dict[str, Any]
+    library_patch: str
+    library_patch_sha: str
+    profiles_sha: str
+    consumers: list[str] = Field(default_factory=list)
+    profile_rows: list[ProfileRow] = Field(default_factory=list)
+    field_summaries: list[FieldSummary] = Field(default_factory=list)
+    unchanged_fields: int = 0
+    reflex_rows: list[ReflexRow] = Field(default_factory=list)
+    world_available: bool = False
+    world_rows: list[WorldRow] = Field(default_factory=list)
+    world_reached: bool = False
+    world_note: str = ""
+    sentences: list[str] = Field(default_factory=list)
+
+
 class Event(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -300,15 +372,20 @@ __all__ = [
     "Event",
     "Experiment",
     "FieldChange",
+    "FieldSummary",
     "Hypothesis",
+    "Impact",
     "MappingKind",
     "Passage",
+    "ProfileRow",
     "Proposal",
     "Provenance",
     "Quantity",
     "Record",
+    "ReflexRow",
     "Source",
     "Vetting",
+    "WorldRow",
     "new_id",
     "now",
 ]
