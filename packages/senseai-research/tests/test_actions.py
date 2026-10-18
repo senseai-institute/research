@@ -1,12 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 from __future__ import annotations
 
-import json
-import shutil
-import subprocess
 from pathlib import Path
 
-import httpx
 import pytest
 
 from senseai_research import actions
@@ -21,7 +17,7 @@ from senseai_research.ledger.models import (
 )
 from senseai_research.ledger.store import Store
 from senseai_research.proposals import github
-from tests.conftest import KANG_SOURCE, OPTICS_QUOTE, store_kang_text
+from tests.conftest import KANG_SOURCE, OPTICS_QUOTE, git, store_kang_text
 
 pytestmark = pytest.mark.profiles
 
@@ -191,49 +187,11 @@ def test_library_change_without_token_goes_to_the_outbox(ready: Store, settings:
     assert "saved for download" in out.message
 
 
-def _git(*args: str, cwd: Path) -> str:
-    return subprocess.run(
-        ["git", *args], cwd=cwd, capture_output=True, text=True, check=True
-    ).stdout.strip()
-
-
-@pytest.fixture
-def fake_github(
-    tmp_path: Path, settings: Settings
-) -> tuple[Settings, Path, list[dict[str, object]]]:
-    """A profiles git checkout, a bare 'GitHub' remote, and a fake REST API."""
-    repo = tmp_path / "profiles-checkout"
-    shutil.copytree(settings.profiles_repo or Path(), repo)
-    _git("init", "-q", "-b", "main", cwd=repo)
-    _git("-c", "user.name=t", "-c", "user.email=t@t", "add", "-A", cwd=repo)
-    _git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "base", cwd=repo)
-    remote = tmp_path / "remote.git"
-    _git("clone", "-q", "--bare", str(repo), str(remote), cwd=tmp_path)
-    calls: list[dict[str, object]] = []
-
-    def handler(req: httpx.Request) -> httpx.Response:
-        calls.append(
-            {
-                "url": str(req.url),
-                "auth": req.headers.get("authorization"),
-                "json": json.loads(req.content),
-            }
-        )
-        return httpx.Response(
-            201, json={"html_url": "https://github.com/senseai-institute/profiles/pull/99"}
-        )
-
-    github.transport = httpx.MockTransport(handler)
-    cfg = settings.with_(profiles_repo=repo, github_token="tok-123", github_remote=str(remote))
-    yield cfg, remote, calls  # type: ignore[misc]
-    github.transport = None
-
-
 def test_library_change_with_token_opens_a_pr(
     ready: Store, fake_github: tuple[Settings, Path, list[dict[str, object]]]
 ) -> None:
     cfg, remote, calls = fake_github
-    head = _git("rev-parse", "HEAD", cwd=cfg.profiles_repo or Path())
+    head = git("rev-parse", "HEAD", cwd=cfg.profiles_repo or Path())
     _approved_claim(ready, cfg)
     a = actions.propose_library_change(
         ready,
@@ -254,11 +212,11 @@ def test_library_change_with_token_opens_a_pr(
     assert call["auth"] == "Bearer tok-123"
     assert body["head"] == f"research/{prop.id}" and body["base"] == "main"
     assert body["title"] == "library(felidae): senses.vision.detection_threshold -0.74 → -0.08"
-    pushed = _git("show", f"research/{prop.id}:library/felidae.yaml", cwd=remote)
+    pushed = git("show", f"research/{prop.id}:library/felidae.yaml", cwd=remote)
     assert "value: -0.08" in pushed
     checkout = cfg.profiles_repo or Path()
-    assert _git("rev-parse", "HEAD", cwd=checkout) == head
-    assert _git("status", "--porcelain", cwd=checkout) == ""
+    assert git("rev-parse", "HEAD", cwd=checkout) == head
+    assert git("status", "--porcelain", cwd=checkout) == ""
 
 
 def test_n1_github_refuses_a_proposal_without_approval(
@@ -276,4 +234,4 @@ def test_n1_github_refuses_a_proposal_without_approval(
     with pytest.raises(github.GitHubError, match="no Approval row"):
         github.open_pr(ready, cfg, prop, file="library/felidae.yaml", new_text="x", body="b")
     assert calls == []
-    assert "research/" not in _git("branch", "--list", cwd=remote)
+    assert "research/" not in git("branch", "--list", cwd=remote)

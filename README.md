@@ -16,7 +16,10 @@ The full design is in [`docs/SPEC.md`](docs/SPEC.md).
 > previews work: what a library change does to Panther's profile, reflex and world prior. So do
 > experiments: the change runs on real night recordings through the bench, compared with an
 > unchanged baseline. Changes wait for a person's approval and then become a pull request on
-> profiles. The chat and the `/research` page come in later phases.
+> profiles. The research assistant runs in the terminal (`senseai-research ask`); in this
+> phase it can search the ledger, read claims and their passages, and read experiment results.
+> Fetching papers, previews, experiments and proposals from the chat come next, then the
+> `/research` page.
 
 ## For a researcher
 

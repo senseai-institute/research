@@ -2,16 +2,21 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
+import shutil
 import socket
+import subprocess
 import sys
 from collections.abc import Iterator
 from pathlib import Path
 
+import httpx
 import pytest
 
 from senseai_research.config import Settings
 from senseai_research.ledger.store import Store
+from senseai_research.proposals import github
 
 FIXTURES = Path(__file__).parent / "fixtures"
 HAVE_PROFILES = importlib.util.find_spec("senseai_profiles") is not None
@@ -118,3 +123,41 @@ def store_kang_text(store: Store) -> None:
         ),
         "pipeline:test@0",
     )
+
+
+def git(*args: str, cwd: Path) -> str:
+    return subprocess.run(
+        ["git", *args], cwd=cwd, capture_output=True, text=True, check=True
+    ).stdout.strip()
+
+
+@pytest.fixture
+def fake_github(
+    tmp_path: Path, settings: Settings
+) -> tuple[Settings, Path, list[dict[str, object]]]:
+    """A profiles git checkout, a bare 'GitHub' remote, and a fake REST API."""
+    repo = tmp_path / "profiles-checkout"
+    shutil.copytree(settings.profiles_repo or Path(), repo)
+    git("init", "-q", "-b", "main", cwd=repo)
+    git("-c", "user.name=t", "-c", "user.email=t@t", "add", "-A", cwd=repo)
+    git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "base", cwd=repo)
+    remote = tmp_path / "remote.git"
+    git("clone", "-q", "--bare", str(repo), str(remote), cwd=tmp_path)
+    calls: list[dict[str, object]] = []
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        calls.append(
+            {
+                "url": str(req.url),
+                "auth": req.headers.get("authorization"),
+                "json": json.loads(req.content),
+            }
+        )
+        return httpx.Response(
+            201, json={"html_url": "https://github.com/senseai-institute/profiles/pull/99"}
+        )
+
+    github.transport = httpx.MockTransport(handler)
+    cfg = settings.with_(profiles_repo=repo, github_token="tok-123", github_remote=str(remote))
+    yield cfg, remote, calls  # type: ignore[misc]
+    github.transport = None
