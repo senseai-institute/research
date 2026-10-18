@@ -199,3 +199,16 @@ def test_start_screen_lists(server: tuple[TestClient, Store, Any]) -> None:
     assert s["least_verified"][0]["status"] == "unverified"
     assert any(r["claim_id"] == CLAIM for r in s["least_verified"][:3])
     assert s["open_questions"][0]["priority"] == "critical"
+
+
+def test_health_checks_the_model_on_a_freshly_booted_machine(
+    settings: Settings, store: Store, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import senseai_research.server.app as app_mod
+
+    monkeypatch.setattr(app_mod.time, "monotonic", lambda: 5.0)  # seconds since boot
+    app = create_app(
+        settings, store=store, trusted_hosts=("testclient",), model_check=lambda: (True, "ok")
+    )
+    with TestClient(app) as client:
+        assert client.get("/api/research/health").json()["model_reachable"] is True
