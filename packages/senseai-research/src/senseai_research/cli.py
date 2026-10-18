@@ -215,13 +215,15 @@ def cmd_experiment(a: argparse.Namespace, cfg: Settings) -> int:
         changes=[Change(a.path, q)],
         max_seconds=a.max_seconds,
     )
-    base, pat = run_experiment(
-        store,
-        cfg,
-        spec,
-        actor="user:cli",
-        progress=lambda p: print(f"  ... {p.get('message', '')}"),
-    )
+    last = [""]
+
+    def say(p: dict[str, object]) -> None:
+        msg = str(p.get("message", ""))
+        if msg and msg != last[0]:
+            print(f"  ... {msg}", flush=True)
+            last[0] = msg
+
+    base, pat = run_experiment(store, cfg, spec, actor="user:cli", progress=say)
     print(f"\nExperiment {pat.id} (baseline {base.id})")
     print(table(compare(base, pat)))
     return 0 if pat.status == "done" else 1
