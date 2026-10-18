@@ -12,9 +12,10 @@ the correction does to the robot, and sign off on a library change.
 
 The full design is in [`docs/SPEC.md`](docs/SPEC.md).
 
-> **Status: phase 2a of 6.** The ledger works: import, export, history and the write rules.
-> Impact previews work: what a library change does to Panther's profile, reflex and world prior.
-> Experiments, the chat and the `/research` page come in later phases.
+> **Status: phase 2 of 6.** The ledger works (import, export, history, write rules). Impact
+> previews work: what a library change does to Panther's profile, reflex and world prior. So do
+> experiments: the change runs on real night recordings through the bench, compared with an
+> unchanged baseline. The chat and the `/research` page come in later phases.
 
 ## For a researcher
 
@@ -39,6 +40,18 @@ example "the frame head trusts the camera image at half confidence down to 0.316
 0.0575 lux)". A table follows with every changed point, and it says whether the world model reads
 the value at all. Every number comes from re-deriving the profiles in code, not from an estimate.
 
+To see what it does on recordings (minutes; the baseline is run once and then reused):
+
+```bash
+senseai-research experiment --path felidae.senses.vision.detection_threshold --value 0 \
+    --sequences zurich_city_03_a,zurich_city_09_b --arms panther_prior,null_profile
+```
+
+The table shows each arm's hit rate before and after, with the **chance hit rate** beside it:
+how often the arm would "hit" by luck alone. A hit rate is meaningful only well above its chance
+rate. With fewer than 20 labelled objects the table says "too few objects to judge" instead of
+a percentage.
+
 ## For an operator
 
 ```bash
@@ -51,6 +64,11 @@ senseai-research export --out export/    # reviewable YAML, stable byte for byte
 senseai-research backup [--s3 s3://bucket/prefix]
 senseai-research schema --out schema/    # JSON Schema of every record
 ```
+
+Experiments need the stack installed the way the viewer's `deploy/setup_ec2.sh` does it
+(`~/senseai/.venv`), plus `SENSEAI_DATA_ROOT` (prepared DSEC recordings),
+`SENSEAI_BENCH_CMD` and `SENSEAI_BENCH_PYTHON`. Each run happens in a temporary copy of the
+profiles checkout, so the checkout itself is never written.
 
 `import` is safe to run again. Values that changed upstream become new revisions; nothing is
 overwritten.

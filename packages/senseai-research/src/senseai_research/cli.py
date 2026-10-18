@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 """``senseai-research``: the command line.
 
-Commands: ``import``, ``export``, ``schema``, ``backup``, ``claims``, ``impact``.
+Commands: ``import``, ``export``, ``schema``, ``backup``, ``claims``, ``impact``,
+``experiment``.
 """
 
 from __future__ import annotations
@@ -188,6 +189,42 @@ def cmd_impact(a: argparse.Namespace, cfg: Settings) -> int:
     imp = preview(open_store(cfg), cfg, a.path, _quantity(a), actor="user:cli")
     print_impact(imp)
     return 0
+
+
+def _experiment_args(p: argparse.ArgumentParser) -> None:
+    _change_args(p)
+    p.add_argument("--sequences", required=True, help="comma list of recording names (or folders)")
+    p.add_argument("--arms", default="panther_prior,null_profile", help="comma list of bench arms")
+    p.add_argument("--max-seconds", type=float, help="only the first N seconds of each recording")
+
+
+@command(
+    "experiment", "run bench on the patched library against a cached baseline", _experiment_args
+)
+def cmd_experiment(a: argparse.Namespace, cfg: Settings) -> int:
+    from senseai_research.experiments import Change, ExperimentSpec, run_experiment
+    from senseai_research.experiments.record import compare, table
+    from senseai_research.impact import preview
+
+    store = open_store(cfg)
+    q = _quantity(a)
+    print_impact(preview(store, cfg, a.path, q, actor="user:cli"))
+    spec = ExperimentSpec(
+        sequences=[s.strip() for s in a.sequences.split(",") if s.strip()],
+        arms=[s.strip() for s in a.arms.split(",") if s.strip()],
+        changes=[Change(a.path, q)],
+        max_seconds=a.max_seconds,
+    )
+    base, pat = run_experiment(
+        store,
+        cfg,
+        spec,
+        actor="user:cli",
+        progress=lambda p: print(f"  ... {p.get('message', '')}"),
+    )
+    print(f"\nExperiment {pat.id} (baseline {base.id})")
+    print(table(compare(base, pat)))
+    return 0 if pat.status == "done" else 1
 
 
 def build_parser() -> argparse.ArgumentParser:
