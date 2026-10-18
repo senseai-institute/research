@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: Apache-2.0
+# PLACEHOLDER. Typical values for a small MEMS microphone array, not a
+# measurement of any unit. Replace with the chosen device's datasheet values.
+
+id: generic_mic_array
+kind: microphone_array
+description: stand-in for a 4-channel MEMS microphone array at audio rates
+placeholder: true
+notes: >-
+  Bandwidth is the audio band; a 48 kHz sample rate cannot capture ultrasound,
+  which is the point of the bat example.
+version: 0.1.0
+
+capabilities:
+  channels:
+    - {name: mic0}
+    - {name: mic1}
+    - {name: mic2}
+    - {name: mic3}
+  sample_rate_hz: {value: 48000, unit: Hz}
+  bandwidth_hz: {value: [50, 20000], unit: Hz}
+  self_noise_dba: {value: 29, unit: dBA}
+  latency_ms: {value: 2, unit: ms, conditions: block of 96 samples}

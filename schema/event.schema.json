@@ -1,0 +1,35 @@
+{
+ "additionalProperties": false,
+ "properties": {
+  "actor": {
+   "title": "Actor",
+   "type": "string"
+  },
+  "at": {
+   "title": "At",
+   "type": "string"
+  },
+  "payload": {
+   "additionalProperties": true,
+   "title": "Payload",
+   "type": "object"
+  },
+  "seq": {
+   "title": "Seq",
+   "type": "integer"
+  },
+  "type": {
+   "title": "Type",
+   "type": "string"
+  }
+ },
+ "required": [
+  "seq",
+  "at",
+  "actor",
+  "type",
+  "payload"
+ ],
+ "title": "Event",
+ "type": "object"
+}

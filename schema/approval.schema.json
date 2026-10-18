@@ -1,0 +1,62 @@
+{
+ "additionalProperties": false,
+ "properties": {
+  "at": {
+   "title": "At",
+   "type": "string"
+  },
+  "by": {
+   "title": "By",
+   "type": "string"
+  },
+  "created_at": {
+   "title": "Created At",
+   "type": "string"
+  },
+  "created_by": {
+   "title": "Created By",
+   "type": "string"
+  },
+  "decision": {
+   "enum": [
+    "approve",
+    "reject"
+   ],
+   "title": "Decision",
+   "type": "string"
+  },
+  "id": {
+   "title": "Id",
+   "type": "string"
+  },
+  "rationale": {
+   "title": "Rationale",
+   "type": "string"
+  },
+  "target_id": {
+   "title": "Target Id",
+   "type": "string"
+  },
+  "target_kind": {
+   "enum": [
+    "claim_revision",
+    "new_claim",
+    "hypothesis",
+    "proposal"
+   ],
+   "title": "Target Kind",
+   "type": "string"
+  }
+ },
+ "required": [
+  "id",
+  "created_by",
+  "target_kind",
+  "target_id",
+  "decision",
+  "by",
+  "rationale"
+ ],
+ "title": "Approval",
+ "type": "object"
+}

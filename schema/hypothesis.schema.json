@@ -1,0 +1,93 @@
+{
+ "additionalProperties": false,
+ "properties": {
+  "consumers": {
+   "items": {
+    "type": "string"
+   },
+   "title": "Consumers",
+   "type": "array"
+  },
+  "created_at": {
+   "title": "Created At",
+   "type": "string"
+  },
+  "created_by": {
+   "title": "Created By",
+   "type": "string"
+  },
+  "experiments": {
+   "items": {
+    "type": "string"
+   },
+   "title": "Experiments",
+   "type": "array"
+  },
+  "id": {
+   "title": "Id",
+   "type": "string"
+  },
+  "linked_claims": {
+   "items": {
+    "type": "string"
+   },
+   "title": "Linked Claims",
+   "type": "array"
+  },
+  "origin": {
+   "title": "Origin",
+   "type": "string"
+  },
+  "prediction": {
+   "default": "",
+   "title": "Prediction",
+   "type": "string"
+  },
+  "priority": {
+   "default": "medium",
+   "enum": [
+    "critical",
+    "high",
+    "medium",
+    "low"
+   ],
+   "title": "Priority",
+   "type": "string"
+  },
+  "statement": {
+   "title": "Statement",
+   "type": "string"
+  },
+  "status": {
+   "default": "open",
+   "enum": [
+    "open",
+    "supported",
+    "refuted",
+    "inconclusive"
+   ],
+   "title": "Status",
+   "type": "string"
+  },
+  "target": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Target"
+  }
+ },
+ "required": [
+  "id",
+  "created_by",
+  "statement",
+  "origin"
+ ],
+ "title": "Hypothesis",
+ "type": "object"
+}

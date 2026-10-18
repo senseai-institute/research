@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://senseai.institute/research/schema/request.schema.json",
+  "$comment": "SPDX-License-Identifier: Apache-2.0. An evidence request: one library value (or sensor value) the R&D engine should find, with what it is worth and what counts as an answer.",
+  "title": "Evidence request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "status", "target", "kind", "quantity", "why", "acceptance", "sources_allowed", "created"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$" },
+    "status": { "type": "string", "enum": ["queued", "in_progress", "answered", "merged", "rejected"] },
+    "target": {
+      "description": "Where the answer goes. A library path (felidae.senses.vision.bandwidth), a sensor path (generic_rgb_camera.snr_curve) or a profile literal (panther.frame.budget_multiplier).",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$"
+    },
+    "target_kind": { "type": "string", "enum": ["library", "sensor", "profile_literal"] },
+    "kind": {
+      "description": "Why the request exists.",
+      "type": "string",
+      "enum": ["missing", "low_confidence", "placeholder", "stand_in_species", "literal_without_rule", "verification"]
+    },
+    "question": { "description": "One sentence a researcher can act on.", "type": "string", "minLength": 1 },
+    "quantity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unit"],
+      "properties": {
+        "unit": { "type": "string", "minLength": 1 },
+        "accepted_units": { "type": "array", "items": { "type": "string" } },
+        "expected_range": { "type": "array", "prefixItems": [{ "type": "number" }, { "type": "number" }], "items": false, "minItems": 2 },
+        "current_value": {},
+        "current_confidence": { "type": "string", "enum": ["high", "medium", "low"] }
+      }
+    },
+    "why": {
+      "description": "Derived from the profile specs: who consumes this value and how much it matters.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["consumers", "priority"],
+      "properties": {
+        "consumers": { "type": "array", "items": { "type": "string" } },
+        "priority": { "type": "string", "enum": ["critical", "high", "medium", "low"] },
+        "rationale": { "type": "string" }
+      }
+    },
+    "acceptance": {
+      "description": "What an answer must satisfy to be merged.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["confidence"],
+      "properties": {
+        "confidence": { "type": "string", "enum": ["high", "medium", "low"] },
+        "species": { "type": "array", "items": { "type": "string" } },
+        "conditions": { "type": "string" },
+        "min_sources": { "type": "integer", "minimum": 1 },
+        "notes": { "type": "string" }
+      }
+    },
+    "sources_allowed": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "enum": ["peer_reviewed", "datasheet", "bench_measurement", "proprietary", "grey_literature"] }
+    },
+    "leads": {
+      "description": "Starting points for the engine: identifiers, search terms, people.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "doi": { "type": "string" },
+          "url": { "type": "string" },
+          "query": { "type": "string" },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "theme": { "description": "Id of a theme record this request belongs to.", "type": "string" },
+    "answer": {
+      "description": "Filled by the engine or a human. Proprietary answers live in research/answers/ instead.",
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["value", "unit", "citations", "confidence", "source_class", "verified_by"],
+      "properties": {
+        "value": {},
+        "unit": { "type": "string" },
+        "citations": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "confidence": { "type": "string", "enum": ["high", "medium", "low"] },
+        "source_class": { "type": "string", "enum": ["peer_reviewed", "datasheet", "bench_measurement", "proprietary", "grey_literature"] },
+        "species": { "type": "string" },
+        "conditions": { "type": "string" },
+        "verified_by": { "type": "string" },
+        "answered": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    },
+    "created": { "type": "string" },
+    "updated": { "type": "string" },
+    "origin": { "description": "How the record was created: sync (derived) or manual.", "type": "string", "enum": ["sync", "manual"] },
+    "history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["at", "status"],
+        "properties": { "at": { "type": "string" }, "status": { "type": "string" }, "note": { "type": "string" } }
+      }
+    }
+  }
+}

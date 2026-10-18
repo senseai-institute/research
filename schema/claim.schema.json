@@ -1,0 +1,281 @@
+{
+ "$defs": {
+  "Quantity": {
+   "additionalProperties": false,
+   "properties": {
+    "canonical_high": {
+     "anyOf": [
+      {
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Canonical High"
+    },
+    "canonical_low": {
+     "anyOf": [
+      {
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Canonical Low"
+    },
+    "canonical_unit": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Canonical Unit"
+    },
+    "canonical_value": {
+     "anyOf": [
+      {
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Canonical Value"
+    },
+    "high": {
+     "anyOf": [
+      {
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "High"
+    },
+    "low": {
+     "anyOf": [
+      {
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Low"
+    },
+    "unit": {
+     "title": "Unit",
+     "type": "string"
+    },
+    "value": {
+     "anyOf": [
+      {
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Value"
+    }
+   },
+   "required": [
+    "unit"
+   ],
+   "title": "Quantity",
+   "type": "object"
+  }
+ },
+ "additionalProperties": false,
+ "properties": {
+  "conditions": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Conditions"
+  },
+  "created_at": {
+   "title": "Created At",
+   "type": "string"
+  },
+  "created_by": {
+   "title": "Created By",
+   "type": "string"
+  },
+  "id": {
+   "title": "Id",
+   "type": "string"
+  },
+  "library_confidence": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Library Confidence"
+  },
+  "library_notes": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Library Notes"
+  },
+  "library_path": {
+   "title": "Library Path",
+   "type": "string"
+  },
+  "mapping": {
+   "anyOf": [
+    {
+     "enum": [
+      "exact",
+      "close",
+      "loose"
+     ],
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Mapping"
+  },
+  "method": {
+   "anyOf": [
+    {
+     "enum": [
+      "behavioural",
+      "electrophysiology",
+      "anatomical",
+      "model",
+      "review"
+     ],
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Method"
+  },
+  "notes_by_reviewer": {
+   "default": "",
+   "title": "Notes By Reviewer",
+   "type": "string"
+  },
+  "passage_id": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Passage Id"
+  },
+  "provenance": {
+   "default": "library",
+   "enum": [
+    "pipeline",
+    "user",
+    "agent-proposed",
+    "library"
+   ],
+   "title": "Provenance",
+   "type": "string"
+  },
+  "quantity": {
+   "$ref": "#/$defs/Quantity"
+  },
+  "revision": {
+   "default": 0,
+   "title": "Revision",
+   "type": "integer"
+  },
+  "source_ids": {
+   "items": {
+    "type": "string"
+   },
+   "title": "Source Ids",
+   "type": "array"
+  },
+  "species": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Species"
+  },
+  "status": {
+   "default": "unverified",
+   "enum": [
+    "unverified",
+    "extracted",
+    "disputed",
+    "verified",
+    "rejected",
+    "superseded"
+   ],
+   "title": "Status",
+   "type": "string"
+  },
+  "unverified_reason": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Unverified Reason"
+  }
+ },
+ "required": [
+  "id",
+  "created_by",
+  "library_path",
+  "quantity"
+ ],
+ "title": "Claim",
+ "type": "object"
+}

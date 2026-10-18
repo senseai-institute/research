@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: Apache-2.0
+# The null profile: every head keeps its default prior. Applying it must give
+# output bit-identical to applying no profile. Used as the baseline in tests.
+
+name: "null"
+version: 0
+clades: [hominidae]   # a profile must name a clade; the human reference is the neutral one
+description: no priors; identity on every head
+heads: {}
+reflex:
+  commit_threshold: 0.5
+  reaction_bias: {}

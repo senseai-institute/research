@@ -1,0 +1,32 @@
+# Generated/updated by `senseai-profiles research sync`. Edit status, leads, acceptance
+# and answer freely; `why` and `quantity.current_*` are re-derived on every sync.
+id: panther-vision-reflex-commit-threshold-literal
+status: queued
+target: panther_vision.reflex.commit_threshold
+target_kind: profile_literal
+kind: literal_without_rule
+question: 'Find biology that would set panther_vision.reflex.commit_threshold (currently a hand-set literal:
+  0.5).'
+quantity:
+  unit: rule-dependent
+why:
+  consumers:
+  - panther_vision.reflex.commit_threshold (literal)
+  priority: medium
+  rationale: hand-set literal in a profile spec; a rule would make it auditable
+acceptance:
+  confidence: medium
+  min_sources: 1
+sources_allowed:
+- peer_reviewed
+- datasheet
+- bench_measurement
+- proprietary
+leads: []
+answer: null
+created: '2026-10-17T20:09:30+00:00'
+origin: sync
+history:
+- at: '2026-10-17T20:09:30+00:00'
+  status: queued
+  note: created by sync

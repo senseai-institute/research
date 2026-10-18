@@ -1,0 +1,39 @@
+# Generated/updated by `senseai-profiles research sync`. Edit status, leads, acceptance
+# and answer freely; `why` and `quantity.current_*` are re-derived on every sync.
+id: hominidae-senses-vision-measurements-scotopic-luminance-floor-verify
+status: queued
+target: hominidae.senses.vision.measurements.scotopic_luminance_floor
+target_kind: library
+kind: low_confidence
+question: Confirm hominidae.senses.vision.measurements.scotopic_luminance_floor (0.0001 cd/m^2) against
+  a primary source.
+quantity:
+  unit: cd/m^2
+  current_value: 0.0001
+  current_confidence: low
+  expected_range:
+  - 3.3333333333333335e-05
+  - 0.00030000000000000003
+why:
+  consumers: []
+  priority: medium
+  rationale: 'value is marked confidence: low'
+acceptance:
+  confidence: high
+  min_sources: 1
+  species:
+  - Homo sapiens
+sources_allowed:
+- peer_reviewed
+- datasheet
+- bench_measurement
+- proprietary
+leads:
+- doi: https://resources.mpi-inf.mpg.de/DarkNoise/article.pdf
+answer: null
+created: '2026-10-14T23:17:40+00:00'
+origin: sync
+history:
+- at: '2026-10-14T23:17:40+00:00'
+  status: queued
+  note: created by sync

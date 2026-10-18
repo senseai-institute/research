@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: Apache-2.0
+# PLACEHOLDER. Typical values for a DVS-style event camera, not a measurement
+# of any unit. Replace with the chosen device's datasheet values.
+
+id: generic_event_camera
+kind: event_camera
+description: stand-in for a dynamic-vision-sensor event camera
+placeholder: true
+notes: >-
+  Order-of-magnitude values typical of the device class. Background activity
+  rises at low light because the photoreceptor front-end noise grows as
+  photocurrent drops; the curve shape is representative, not measured.
+version: 0.1.0
+
+capabilities:
+  resolution_px: {value: [640, 480], unit: px}
+  field_of_view_deg: {value: [90, 67], unit: deg}
+  latency_ms: {value: 0.1, unit: ms, conditions: pixel change to event timestamp}
+  dynamic_range_db: {value: 120, unit: dB}
+  contrast_threshold_pct: {value: 15, unit: '%'}
+  max_event_rate_meps: {value: 100, unit: Meps}
+  usable_illuminance_lux: {value: [0.1, 100000], unit: lux}
+  background_activity_eps:
+    x: [0.01, 0.1, 1, 10, 100, 1000]
+    y: [5.0, 1.0, 0.2, 0.1, 0.1, 0.1]
+    x_unit: lux
+    x_scale: log
+    y_unit: events/s/px

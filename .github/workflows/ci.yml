@@ -1,0 +1,60 @@
+# SPDX-License-Identifier: Apache-2.0
+# ruff, mypy, pytest. No network calls from tests and no API key (spec §13).
+# senseai-profiles is a private repo: installing it needs a read token in the
+# SENSEAI_READ_TOKEN secret (the same org secret profiles' own CI uses).
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PROFILES_SHA: 018d2d6009959d0b66a90f234ffcb4da3c0a059d
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: packages/senseai-research
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read token present
+        env:
+          SENSEAI_READ_TOKEN: ${{ secrets.SENSEAI_READ_TOKEN }}
+        run: |
+          if [ -z "$SENSEAI_READ_TOKEN" ]; then
+            echo "::error::SENSEAI_READ_TOKEN is not set. Add a fine-grained token with read access to senseai-institute/profiles as a repository or organisation secret."
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+        with:
+          repository: senseai-institute/profiles
+          ref: ${{ env.PROFILES_SHA }}
+          token: ${{ secrets.SENSEAI_READ_TOKEN }}
+          path: _profiles
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - name: Install
+        env:
+          SENSEAI_READ_TOKEN: ${{ secrets.SENSEAI_READ_TOKEN }}
+        run: |
+          git config --global url."https://x-access-token:${SENSEAI_READ_TOKEN}@github.com/".insteadOf "https://github.com/"
+          uv venv
+          uv pip install -e ".[dev]"
+      - run: uv run --no-sync ruff check .
+      - run: uv run --no-sync ruff format --check .
+      - run: uv run --no-sync mypy
+      - name: pytest
+        env:
+          SENSEAI_PROFILES_REPO: ${{ github.workspace }}/_profiles
+        run: uv run --no-sync pytest -q

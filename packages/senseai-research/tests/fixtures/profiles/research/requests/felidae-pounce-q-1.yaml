@@ -1,0 +1,32 @@
+# Generated/updated by `senseai-profiles research sync`. Edit status, leads, acceptance
+# and answer freely; `why` and `quantity.current_*` are re-derived on every sync.
+id: felidae-pounce-q-1
+status: queued
+target: felidae.behaviours.pounce
+target_kind: library
+kind: missing
+question: Latency from final crouch to strike (latency_ms). No primary measurement verified.
+quantity:
+  unit: unknown
+why:
+  consumers: []
+  priority: medium
+  rationale: open question on behaviour 'pounce'
+acceptance:
+  confidence: medium
+  min_sources: 1
+  species:
+  - Felis catus
+sources_allowed:
+- peer_reviewed
+- datasheet
+- bench_measurement
+- proprietary
+leads: []
+answer: null
+created: '2026-10-14T23:17:40+00:00'
+origin: sync
+history:
+- at: '2026-10-14T23:17:40+00:00'
+  status: queued
+  note: created by sync

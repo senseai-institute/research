@@ -1,0 +1,210 @@
+# SPDX-License-Identifier: CC-BY-4.0
+# Species Sensory Library — Felidae (cats).
+# Describes the animal. It makes no claim about any machine built from it.
+# Full references for every citation below: library/CITATIONS.md
+
+clade: Felidae
+rank: family
+common_names: [cats, felids]
+
+representative_species:
+  - name: Felis catus
+    common_name: domestic cat
+    notes: >-
+      Nearly every quantitative measurement in this entry comes from the domestic
+      cat. Values have not been checked against Panthera or other large felids;
+      some (pupil shape and range) are known to differ.
+
+conservation:
+  iucn: mixed
+  source: https://www.iucnredlist.org/
+  notes: >-
+    The family spans categories. The domestic cat is Not Evaluated; the leopard
+    (Panthera pardus) is listed Vulnerable and the jaguar (Panthera onca) Near
+    Threatened. Check the Red List for current assessments.
+
+senses:
+  - id: vision
+    modality: vision
+    organ: camera eye with choroidal tapetum lucidum, vertical slit pupil, rod-dominated retina
+    signal: light, scotopic to photopic
+    detection_threshold:
+      value: -0.74
+      unit: log10 re human
+      confidence: high
+      species: Felis catus
+      conditions: >-
+        Behavioural, scotopic, low spatial frequencies (at or below 1/8 cycle/deg).
+        Negative means the cat detects dimmer stimuli than the human.
+      notes: >-
+        The authors attribute most of the advantage to optics (pupil size and
+        light collection). With optics factored out, scotopic sensitivity of
+        cat and human is similar.
+      citations:
+        - 10.1152/jn.90641.2008
+        - https://pmc.ncbi.nlm.nih.gov/articles/PMC2724355
+    measurements:
+      - id: rod_density_peak
+        description: peak rod density, forming a ring around the area centralis
+        value: 460000
+        unit: cells/mm^2
+        confidence: high
+        species: Felis catus
+        conditions: light microscopy, corrected for tissue shrinkage; peak at 10-15 deg eccentricity
+        citations: [10.1002/cne.901480209]
+      - id: rod_density_central
+        description: rod density at the centre of the area centralis (local minimum)
+        value: 275000
+        unit: cells/mm^2
+        confidence: high
+        species: Felis catus
+        citations: [10.1002/cne.901480209]
+      - id: cone_density_peak
+        description: peak cone density, at the area centralis
+        value: [26000, 27000]
+        unit: cells/mm^2
+        confidence: high
+        species: Felis catus
+        citations: [10.1002/cne.901480209]
+      - id: cone_density_peripheral
+        description: plateau cone density in the peripheral retina
+        value: 4000
+        unit: cells/mm^2
+        confidence: high
+        species: Felis catus
+        citations: [10.1002/cne.901480209]
+      - id: pupil_area_range
+        description: ratio of maximum to minimum pupil area
+        value: 135
+        unit: ratio
+        confidence: medium
+        species: Felis catus
+        notes: >-
+          Confirmed only via secondary reports of the cited paper; the same reports
+          give the human ratio as about fifteen-fold. Large Panthera species have
+          round pupils, so this value should not be assumed for them.
+        citations: [10.1126/sciadv.1500391]
+    notes: >-
+      Rods outnumber cones everywhere in the retina. The tapetum lucidum is of the
+      choroidal cellulosum type, reflecting light back through the photoreceptor
+      layer for a second chance at absorption. The vertical slit pupil is associated
+      with ambush predators active by day and night.
+    citations:
+      - 10.1113/jphysiol.1951.sp004599
+      - 10.1152/jn.90641.2008
+      - 10.1002/cne.901480209
+      - 10.1111/j.1463-5224.2004.00318.x
+      - 10.1126/sciadv.1500391
+    open_questions:
+      - Flicker-fusion frequency (temporal bandwidth). Behavioural and evoked-potential studies exist but no value has been verified for this entry.
+      - Behavioural grating acuity (spatial_resolution). Blake, Cool and Crawford (1974) measured it; value not yet verified against the paper.
+      - Total and binocular field of view.
+      - Gain contributed by the tapetum alone, separated from pupil and rod effects.
+
+  - id: hearing
+    modality: hearing
+    organ: mobile pinnae, middle and inner ear
+    signal: airborne sound pressure
+    range:
+      value: [48, 85000]
+      unit: Hz
+      confidence: high
+      species: Felis catus
+      conditions: behavioural audiogram limits at 70 dB SPL
+      citations:
+        - 10.1016/0378-5955(85)90100-5
+        - https://pubmed.ncbi.nlm.nih.gov/4066516/
+    spatial_resolution:
+      value: 5
+      unit: deg
+      confidence: medium
+      species: Felis catus
+      conditions: minimum audible angle for broadband noise, two sources centred on the frontal midline
+      notes: >-
+        Value as reported by later reviews of the cited study. Acuity was also
+        measured away from the midline and was poorer there; per-azimuth values
+        not yet transcribed.
+      citations: [10.1016/0378-5955(88)90064-0]
+    latency_ms:
+      value: 25
+      unit: ms
+      confidence: high
+      species: Felis catus
+      conditions: short-latency pinna movement after sound onset, magnetic search coil
+      notes: >-
+        Strongly asymmetric, largest in the pinna on the side of the sound. A
+        later study by the same group reports pinna latencies of roughly 30-40 ms.
+      citations:
+        - 10.1523/JNEUROSCI.18-11-04233.1998
+        - https://pmc.ncbi.nlm.nih.gov/articles/PMC6792787
+    notes: >-
+      One of the broadest hearing ranges among mammals; high-frequency hearing
+      was extended without loss of low-frequency sensitivity. Localisation
+      acuity changed little with stimulus duration, from very brief bursts to
+      continuous sound.
+    citations:
+      - 10.1016/0378-5955(85)90100-5
+      - 10.1016/0378-5955(88)90064-0
+      - 10.1523/JNEUROSCI.18-11-04233.1998
+
+  - id: vibrissae
+    modality: touch
+    organ: mystacial vibrissae (sinus hairs) and follicle mechanoreceptors
+    signal: mechanical deflection of the hair shaft
+    measurements:
+      - id: afferent_unit_types
+        description: number of distinct mechanoreceptive afferent types recorded from sinus hair follicles
+        value: 4
+        unit: count
+        confidence: high
+        species: Felis catus
+        notes: >-
+          Two slowly adapting types (matching type I and type II receptors of
+          hairy skin) and two rapidly adapting types (one with a low, one with a
+          high velocity threshold).
+        citations: [https://pmc.ncbi.nlm.nih.gov/articles/PMC1350747]
+    notes: >-
+      Sinus hairs on the muzzle and the carpal (wrist) region are innervated by
+      both slowly and rapidly adapting afferents, so they signal sustained
+      deflection as well as its onset and velocity.
+    citations:
+      - https://pmc.ncbi.nlm.nih.gov/articles/PMC1350747
+    open_questions:
+      - Deflection threshold (angle or displacement) of mystacial vibrissae.
+      - Whisker protraction during the final approach and bite. Widely described; no controlled measurement verified for this entry.
+
+behaviours:
+  - name: acoustic_orienting
+    uses_senses: [hearing]
+    description: >-
+      Rapid pinna movement toward a sound source, followed by eye and head
+      orienting. The fast pinna component is locked to sound onset.
+    latency_ms:
+      value: 25
+      unit: ms
+      confidence: high
+      species: Felis catus
+      citations: [10.1523/JNEUROSCI.18-11-04233.1998]
+    citations: [10.1523/JNEUROSCI.18-11-04233.1998]
+
+  - name: pounce
+    uses_senses: [vision, hearing, vibrissae]
+    description: >-
+      Ambush or stalk followed by a short rush and pounce. The cat approaches low
+      and slowly, pauses in a crouch, then commits to a fast final attack.
+    citations:
+      - https://search.ub.tum.de/vufind/Record/DE-604.BV007522844
+      - 10.1016/s0163-1047(80)92456-5
+    open_questions:
+      - Latency from final crouch to strike (latency_ms). No primary measurement verified.
+      - Distance at which the final rush is triggered.
+
+open_questions:
+  - No sensory measurements from Panthera species have been verified for this entry. Treat every value as domestic cat.
+
+contributors:
+  - name: Claude Code (Anthropic)
+    role: drafted-by-ai
+
+review_status: draft
+version: 0.1.0

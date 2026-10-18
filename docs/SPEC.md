@@ -293,3 +293,67 @@ In CI this runs with:
 - Golden test: the impact diff for the felidae threshold change against a pinned fixture library.
 - `ruff`, `mypy --strict` on `src/`, `pytest -q`. Python ≥ 3.10.
 
+
+---
+
+# Build notes (not part of the spec above)
+
+Everything above this line is the spec as received, verbatim. Below it: the code this repo
+was built against, and the places where that code differs from the spec's description of it.
+Where they disagree, the code wins.
+
+## Built against
+
+| repo | SHA | notes |
+|---|---|---|
+| profiles | `018d2d6009959d0b66a90f234ffcb4da3c0a059d` | as in the spec |
+| world | `8ec2cfdfbfd1671a0b3aad0263f601018dc68edb` | as in the spec |
+| bench | `d7c963ac6497bf7b035cedbac47a3ee41913f975` | as in the spec |
+| viewer | `a7878717ad55b5b39517b172b2ac982d87daa392` | spec says `96d83e8`; main had moved on (PR #8 merged) |
+
+## Deviations
+
+1. **Viewer layout.** The runner is `packages/senseai-viewer/server/senseai_viewer/runner/`
+   (`tools.py` builds the bench command, `stages.py` tails `bench_events.jsonl`), not
+   `packages/senseai-viewer/src/**/runner.py`. There is no `headline.ts`. The SSE tailer is
+   `senseai_viewer.live.tail_events`. Viewer auth (`auth.py`) is a shared password; the Basic-auth
+   user name is ignored, so the proxy sends the Basic-auth user name when there is one and
+   `senseai` otherwise.
+2. **Bench command line.** `senseai-bench replay-compare` takes `--sequence DIR` (repeatable),
+   not `--data … --sequences a,b`. Sequences are resolved to folders under `SENSEAI_DATA_ROOT`
+   the way the viewer does (`prepare.find_local`). The argument builder is copied from viewer
+   `runner/tools.py::compare_command`, since the viewer package is not importable here.
+3. **Chance hit rate is not in bench d7c963a.** `replay_report.json` has `hit_rate`,
+   `active_fraction` and per-arm timelines (`timelines/<seq>__<arm>.npz`) but no chance rate.
+   This repo computes it from those files (`experiments/chance.py`): a circular-shift luck
+   check that re-scores each arm's own activity, shifted in time, against the same labelled
+   objects. If a future bench writes `chance_hit_rate`, that value is used instead.
+   `docs/UPSTREAM.md` proposes the bench patch.
+4. **Bench reads profile bundles, not the library.** SDK arms package the tracked bundles in
+   `packages/senseai-profiles/priors/*.npz` from the profiles checkout. A patched library therefore
+   changes nothing unless the bundles are re-distilled. The experiment workspace re-runs
+   `senseai_profiles.distill` for every profile in the arms after patching (in the temporary
+   copy only). The structured prior (`panther_prior`) also reads `library/felidae.yaml` directly,
+   through `--profiles-repo`.
+5. **World prior provenance kinds** are `physics | measured | proposed`, not `measured |
+   default`. The impact report shows the kind as written. `import senseai_world.prior` pulls in
+   torch (`prior/__init__.py` imports the model), so `impact/world.py` loads `prior/params.py` on
+   its own (it needs only PyYAML). When world is not installed, it falls back to a copy of
+   `params.py` from 8ec2cfd, which a test keeps in sync when world is present.
+6. **The felidae detection threshold is `confidence: high` in the YAML.** It is still
+   `unverified` in the ledger: CITATIONS.md marks its source as read only as an abstract, and
+   there is no full-text quote. `Claim.library_confidence` keeps the library's own label.
+7. **Python ≥ 3.11**, not 3.10: senseai-profiles requires 3.11.
+8. **Dependencies.** senseai-world and senseai-bench are not package dependencies. Bench runs as
+   a subprocess (`SENSEAI_BENCH_CMD`), and world is read as described in 5. Both pull in torch.
+   senseai-profiles is a pinned git dependency.
+9. **Repository visibility.** `senseai-institute/research` already existed and is public; the
+   spec asks for private. Visibility was not changed; that is the owner's call. CI needs the
+   `SENSEAI_READ_TOKEN` secret, the same one profiles' CI uses, to install private profiles.
+10. **`senseai_poc_ec2.sh` is not in any senseai-institute repo** this build could read. The
+    closest is viewer `packages/senseai-viewer/deploy/setup_ec2.sh`. It creates `~/senseai/.venv`
+    and reads `/etc/senseai-viewer.env`. The research installer reads `~/senseai/viewer.env`
+    when it exists, else `/etc/senseai-viewer.env`.
+11. **Record details.** A claim imported from the library with no quote has `provenance: library`
+    (the spec lists only pipeline, user and agent-proposed). An Approval's `target` is a pending
+    action id plus a `target_kind` (`claim_revision | new_claim | hypothesis | proposal`).
