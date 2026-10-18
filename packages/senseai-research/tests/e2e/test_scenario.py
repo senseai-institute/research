@@ -5,6 +5,8 @@ fake GitHub. Each numbered step of the scenario is a block below."""
 from __future__ import annotations
 
 import shutil
+import sys
+import traceback
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
@@ -16,7 +18,7 @@ from senseai_research.agent import Agent
 from senseai_research.agent.client import set_client_factory
 from senseai_research.config import Settings
 from senseai_research.ledger.importers import import_library
-from senseai_research.ledger.models import Claim, Experiment, Impact, Proposal, Source
+from senseai_research.ledger.models import Approval, Claim, Experiment, Impact, Proposal, Source
 from senseai_research.ledger.store import Store
 from tests.conftest import FIXTURES, OPTICS_QUOTE, git
 from tests.recorded import RecordedTransport, factory
@@ -58,6 +60,12 @@ def world(
 
 
 def test_scenario_11(
+    world: tuple[Agent, Store, Settings, RecordedTransport, Path, list[dict[str, object]]],
+) -> None:
+    play(world)
+
+
+def play(
     world: tuple[Agent, Store, Settings, RecordedTransport, Path, list[dict[str, object]]],
 ) -> None:
     agent, store, cfg, transport, remote, calls = world
@@ -182,3 +190,103 @@ def test_scenario_11(
     # N1: the profiles checkout itself was never written.
     assert git("rev-parse", "HEAD", cwd=checkout) == head
     assert git("status", "--porcelain", cwd=checkout) == ""
+
+
+# -- §13 property: nothing writes profiles except proposals/github.py, after an Approval --------
+
+_WRITE_EVENTS = {"os.remove", "os.rename", "os.replace", "os.mkdir", "os.rmdir", "os.truncate"}
+_hook: dict[str, Any] = {"on": None}
+
+
+def _audit(event: str, args: tuple[Any, ...]) -> None:
+    sink = _hook["on"]
+    if sink is not None and not sink.busy:
+        sink.busy = True
+        try:
+            sink.seen(event, args)
+        finally:
+            sink.busy = False
+
+
+class ProfilesWrites:
+    """Every write into the profiles checkout or its remote, and every git command that could
+    write either, with the senseai_research module that caused it and the approvals at that time."""
+
+    def __init__(self, checkout: Path, remote: Path, store: Store) -> None:
+        self.roots = (checkout.resolve(), remote.resolve())
+        self.store = store
+        self.busy = False
+        self.writes: list[tuple[str, str]] = []
+        self.pushes: list[tuple[str, int]] = []
+
+    def _inside(self, path: Any) -> bool:
+        try:
+            p = Path(path if isinstance(path, str | Path) else "").resolve()
+        except (OSError, TypeError, ValueError):
+            return False
+        return any(p == r or r in p.parents for r in self.roots)
+
+    @staticmethod
+    def _caller() -> str:
+        for f in reversed(traceback.extract_stack()):
+            if "senseai_research" in f.filename and "/tests/" not in f.filename:
+                return f.filename.split("senseai_research/")[-1]
+        return "?"
+
+    def seen(self, event: str, args: tuple[Any, ...]) -> None:
+        if event == "open":
+            path, mode = args[0], args[1]
+            writing = isinstance(mode, str) and any(c in mode for c in "wax+")
+            if isinstance(mode, int):
+                writing = bool(mode & 0o3)  # os.open flags: O_WRONLY | O_RDWR
+            if writing and self._inside(path):
+                self.writes.append((self._caller(), str(path)))
+        elif event in _WRITE_EVENTS and args and self._inside(args[0]):
+            self.writes.append((self._caller(), f"{event} {args[0]}"))
+        elif event == "subprocess.Popen":
+            argv = [str(a) for a in (args[1] or [])]
+            cwd = args[2]
+            if "git" in Path(argv[0]).name if argv else False:
+                if "push" in argv:
+                    approvals = [
+                        a
+                        for a in self.store.all("approval", Approval)
+                        if a.target_kind == "proposal" and a.decision == "approve"
+                    ]
+                    self.pushes.append((self._caller(), len(approvals)))
+                elif (
+                    cwd is not None
+                    and self._inside(cwd)
+                    and argv[1:2]
+                    not in (
+                        ["rev-parse"],
+                        ["log"],
+                        ["show"],
+                        ["status"],
+                        ["ls-files"],
+                        ["diff"],
+                        ["cat-file"],
+                    )
+                ):
+                    self.writes.append((self._caller(), " ".join(argv)))
+
+
+sys.addaudithook(_audit)
+
+
+def test_n1_only_github_writes_profiles_and_only_after_an_approval(
+    world: tuple[Agent, Store, Settings, RecordedTransport, Path, list[dict[str, object]]],
+) -> None:
+    """Spec §13: the whole §11 scenario, watched by a Python audit hook. No code path writes the
+    profiles checkout or its remote except ``proposals/github.py``, and that pushes only once an
+    Approval row exists for the proposal."""
+    _, store, cfg, _, remote, calls = world
+    watch = ProfilesWrites(cfg.profiles_repo or Path(), remote, store)
+    _hook["on"] = watch
+    try:
+        play(world)
+    finally:
+        _hook["on"] = None
+    assert watch.writes == [], watch.writes
+    assert watch.pushes == [("proposals/github.py", 1)], watch.pushes
+    assert len(calls) == 1, "one PR opened, after the push"
