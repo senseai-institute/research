@@ -8,10 +8,12 @@ conversation so the agent knows what happened (spec §8).
 
 from __future__ import annotations
 
+import contextlib
+import json
 from typing import Any
 
 from senseai_research import actions
-from senseai_research.agent.loop import AgentLoop, Emit, TurnResult
+from senseai_research.agent.loop import AgentLoop, Emit, TurnResult, refs
 from senseai_research.agent.tools import BY_NAME
 from senseai_research.agent.transcript import NOTE_PREFIX, Transcript
 from senseai_research.config import Settings
@@ -91,13 +93,15 @@ class Agent:
                     label = spec.label(b.get("input") or {}) if spec else b["name"]
                     out.append({"kind": "tool", "id": b["id"], "name": b["name"], "label": label})
                 elif t == "tool_result":
-                    out.append(
-                        {
-                            "kind": "tool_result",
-                            "id": b["tool_use_id"],
-                            "ok": not b.get("is_error", False),
-                        }
-                    )
+                    item: dict[str, Any] = {
+                        "kind": "tool_result",
+                        "id": b["tool_use_id"],
+                        "ok": not b.get("is_error", False),
+                    }
+                    if item["ok"] and isinstance(b.get("content"), str):
+                        with contextlib.suppress(ValueError, AttributeError):
+                            item["refs"] = refs(json.loads(b["content"]))
+                    out.append(item)
         for a in self.store.all("action", PendingAction):
             if a.conversation_id == conversation_id:
                 out.append({"kind": "card", "action": a.model_dump()})

@@ -12,13 +12,32 @@ the correction does to the robot, and sign off on a library change.
 
 The full design is in [`docs/SPEC.md`](docs/SPEC.md).
 
-> **Status: phase 3 of 6.** The ledger, impact previews, bench experiments, approvals and
-> library PRs all work, and so does the research assistant, in the terminal (`senseai-research
-> ask`). The `/research` page in the viewer comes in phase 4.
+> **Status: phase 4 of 6.** Everything below works, including the `/research` page in the
+> viewer. Still to come: moving the curate pipeline into this repo (phase 5) and the one-command
+> EC2 install (phase 6).
 
 ## For a researcher
 
-Until the web page arrives (phase 4), the assistant runs in a terminal on the EC2 box:
+Open **Research** in the viewer (`/research`, behind the viewer password). The left side is the
+conversation; the right side shows the value you are looking at.
+
+- **Start screen**: *Open questions* (the research queue, most important first) and
+  *Least-verified values Panther depends on*. Click a value to see it in the Claim tab.
+- **Ask in plain words**, for example "Where does −0.74 come from, and is it the right number for
+  a robot camera?". Each step the assistant takes shows as a small chip ("Fetching the full
+  text of 10.1152/jn.90641.2008"). Passages it finds appear in the **Source** tab, with the quote
+  highlighted.
+- **Changes are cards.** When the assistant proposes a correction, a card shows the old and new
+  value and the quote it rests on. Nothing changes until you write your reason and click
+  **Approve**. A "yes" in the chat is not an approval. The old value stays in the claim's
+  history.
+- **Impact** shows which robot settings read the value and what changes, and whether the world
+  model reads it. **Experiment** shows bench results on night recordings, with the chance hit
+  rate (the luck check) beside every hit rate.
+
+![The Impact tab after a correction](docs/screens/4-impact.png)
+
+The same assistant also runs in a terminal on the EC2 box:
 
 ```bash
 senseai-research ask
@@ -90,6 +109,10 @@ senseai-research export --out export/    # reviewable YAML, stable byte for byte
 senseai-research backup [--s3 s3://bucket/prefix]
 senseai-research schema --out schema/    # JSON Schema of every record
 ```
+
+The research server: `senseai-research serve` (127.0.0.1:`RESEARCH_PORT`, default 8100). The
+viewer shows the Research page when `RESEARCH_URL=http://127.0.0.1:8100` is set in its
+environment. It proxies `/api/research/*` and passes the signed-in user on.
 
 Experiments need the stack installed the way the viewer's `deploy/setup_ec2.sh` does it
 (`~/senseai/.venv`), plus `SENSEAI_DATA_ROOT` (prepared DSEC recordings),

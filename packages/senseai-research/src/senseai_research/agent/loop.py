@@ -110,6 +110,25 @@ class Usage:
         }
 
 
+#: Small fields of a tool result the page uses to open the right context tab (not raw JSON).
+REF_KEYS = (
+    "claim_id",
+    "impact_id",
+    "experiment_id",
+    "source_id",
+    "pending_action_id",
+    "doi",
+    "section",
+    "text",
+    "context_before",
+    "context_after",
+)
+
+
+def refs(result: dict[str, Any]) -> dict[str, Any]:
+    return {k: result[k] for k in REF_KEYS if isinstance(result.get(k), (str, int, float))}
+
+
 def _block(b: Any) -> dict[str, Any]:
     out: dict[str, Any] = b.model_dump(mode="json", exclude_none=True)
     return out
@@ -363,7 +382,10 @@ class AgentLoop:
                     ),
                 }
             )
-            emit("tool_result_summary", {"id": tu.id, "ok": True, "summary": out.summary})
+            emit(
+                "tool_result_summary",
+                {"id": tu.id, "ok": True, "summary": out.summary, "refs": refs(out.result)},
+            )
             if out.pending is not None:
                 pending.append(out.pending.id)
                 emit("pending_action", {"action": out.pending.model_dump()})

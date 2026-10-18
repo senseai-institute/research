@@ -147,7 +147,13 @@ class Store:
 
     @property
     def schema_version(self) -> int:
-        return int(self._conn.execute("PRAGMA user_version").fetchone()[0])
+        return int(self.query("PRAGMA user_version")[0][0])
+
+    def query(self, sql: str, args: Any = ()) -> list[Any]:
+        """Run a read under the store's lock. The connection is shared by the server's threads,
+        so every use of it, read or write, is serialised here or in :meth:`tx`."""
+        with self._lock:
+            return self._conn.execute(sql, args).fetchall()
 
     @contextmanager
     def tx(self) -> Iterator[sqlite3.Connection]:
@@ -193,7 +199,7 @@ class Store:
             args.append(f"%{json.dumps(entity_id)}%")
         sql += " ORDER BY seq"
         out = []
-        for seq, at, actor, t, payload in self._conn.execute(sql, args):
+        for seq, at, actor, t, payload in self.query(sql, args):
             out.append(Event(seq=seq, at=at, actor=actor, type=t, payload=json.loads(payload)))
         return out
 
@@ -232,23 +238,19 @@ class Store:
         """All projected entities as ``{kind/id: data}`` (for tests and export)."""
         return {
             f"{k}/{i}": json.loads(d)
-            for k, i, d in self._conn.execute("SELECT kind, id, data FROM entities ORDER BY 1, 2")
+            for k, i, d in self.query("SELECT kind, id, data FROM entities ORDER BY 1, 2")
         }
 
     # -- generic reads -----------------------------------------------------------
 
     def get_raw(self, kind: str, id_: str) -> dict[str, Any] | None:
-        row = self._conn.execute(
-            "SELECT data FROM entities WHERE kind=? AND id=?", (kind, id_)
-        ).fetchone()
-        return None if row is None else dict(json.loads(row[0]))
+        rows = self.query("SELECT data FROM entities WHERE kind=? AND id=?", (kind, id_))
+        return dict(json.loads(rows[0][0])) if rows else None
 
     def list_raw(self, kind: str) -> list[dict[str, Any]]:
         return [
             json.loads(d)
-            for (d,) in self._conn.execute(
-                "SELECT data FROM entities WHERE kind=? ORDER BY id", (kind,)
-            )
+            for (d,) in self.query("SELECT data FROM entities WHERE kind=? ORDER BY id", (kind,))
         ]
 
     def get(self, kind: str, id_: str, model: type[M]) -> M | None:
@@ -276,11 +278,10 @@ class Store:
         return sha
 
     def text(self, sha256: str) -> tuple[str, list[tuple[str, int]]] | None:
-        row = self._conn.execute(
-            "SELECT text, sections FROM source_texts WHERE sha256=?", (sha256,)
-        ).fetchone()
-        if row is None:
+        rows = self.query("SELECT text, sections FROM source_texts WHERE sha256=?", (sha256,))
+        if not rows:
             return None
+        row = rows[0]
         return row[0], [(str(a), int(b)) for a, b in json.loads(row[1])]
 
     def put_source(self, src: Source, actor: str) -> Source:

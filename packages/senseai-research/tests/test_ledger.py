@@ -211,3 +211,36 @@ def test_committed_json_schemas_match_the_models(tmp_path: Path) -> None:
         assert f.read_text() == (repo / f.name).read_text(), (
             f"run `senseai-research schema`: {f.name}"
         )
+
+
+def test_store_is_safe_across_threads(store: Store) -> None:
+    """The server reads from request threads while an agent turn writes from its own."""
+    import threading
+
+    errors: list[BaseException] = []
+    stop = threading.Event()
+
+    def write() -> None:
+        try:
+            for i in range(200):
+                _claim(store, id=f"clm-{i}")
+        except BaseException as e:
+            errors.append(e)
+        finally:
+            stop.set()
+
+    def read() -> None:
+        try:
+            while not stop.is_set():
+                store.claims()
+                store.get_raw("claim", "clm-1")
+                store.events(type_prefix="claim.")
+        except BaseException as e:
+            errors.append(e)
+
+    threads = [threading.Thread(target=write), *(threading.Thread(target=read) for _ in range(3))]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join(30)
+    assert errors == [] and len(store.claims()) == 200

@@ -71,7 +71,7 @@ class Transcript:
 
     def rows(self, conversation_id: str) -> list[dict[str, Any]]:
         out = []
-        for n, at, role, content, meta in self.store._conn.execute(
+        for n, at, role, content, meta in self.store.query(
             "SELECT n, at, role, content, meta FROM messages WHERE conversation_id=? ORDER BY n",
             (conversation_id,),
         ):
