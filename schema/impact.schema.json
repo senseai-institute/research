@@ -1,0 +1,336 @@
+{
+ "$defs": {
+  "FieldSummary": {
+   "additionalProperties": false,
+   "properties": {
+    "changed_points": {
+     "title": "Changed Points",
+     "type": "integer"
+    },
+    "field": {
+     "title": "Field",
+     "type": "string"
+    },
+    "max_abs_delta_pct": {
+     "anyOf": [
+      {
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Max Abs Delta Pct"
+    },
+    "profile": {
+     "title": "Profile",
+     "type": "string"
+    },
+    "rule": {
+     "title": "Rule",
+     "type": "string"
+    },
+    "section": {
+     "title": "Section",
+     "type": "string"
+    },
+    "sentence": {
+     "title": "Sentence",
+     "type": "string"
+    }
+   },
+   "required": [
+    "profile",
+    "section",
+    "field",
+    "rule",
+    "changed_points",
+    "sentence"
+   ],
+   "title": "FieldSummary",
+   "type": "object"
+  },
+  "ProfileRow": {
+   "additionalProperties": false,
+   "description": "One derived value that changes: a gain-LUT point, an attention weight, a scalar.",
+   "properties": {
+    "delta_pct": {
+     "anyOf": [
+      {
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Delta Pct"
+    },
+    "field": {
+     "title": "Field",
+     "type": "string"
+    },
+    "new": {
+     "anyOf": [
+      {
+       "type": "number"
+      },
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "New"
+    },
+    "old": {
+     "anyOf": [
+      {
+       "type": "number"
+      },
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Old"
+    },
+    "point": {
+     "default": "",
+     "title": "Point",
+     "type": "string"
+    },
+    "profile": {
+     "title": "Profile",
+     "type": "string"
+    },
+    "section": {
+     "title": "Section",
+     "type": "string"
+    }
+   },
+   "required": [
+    "profile",
+    "section",
+    "field"
+   ],
+   "title": "ProfileRow",
+   "type": "object"
+  },
+  "ReflexRow": {
+   "additionalProperties": false,
+   "properties": {
+    "arm": {
+     "title": "Arm",
+     "type": "string"
+    },
+    "commit_threshold_new": {
+     "title": "Commit Threshold New",
+     "type": "number"
+    },
+    "commit_threshold_old": {
+     "title": "Commit Threshold Old",
+     "type": "number"
+    },
+    "profile": {
+     "title": "Profile",
+     "type": "string"
+    },
+    "theta_new": {
+     "title": "Theta New",
+     "type": "number"
+    },
+    "theta_old": {
+     "title": "Theta Old",
+     "type": "number"
+    }
+   },
+   "required": [
+    "arm",
+    "profile",
+    "commit_threshold_old",
+    "commit_threshold_new",
+    "theta_old",
+    "theta_new"
+   ],
+   "title": "ReflexRow",
+   "type": "object"
+  },
+  "WorldRow": {
+   "additionalProperties": false,
+   "properties": {
+    "changed": {
+     "title": "Changed",
+     "type": "boolean"
+    },
+    "kind_new": {
+     "title": "Kind New",
+     "type": "string"
+    },
+    "kind_old": {
+     "title": "Kind Old",
+     "type": "string"
+    },
+    "measured": {
+     "title": "Measured",
+     "type": "boolean"
+    },
+    "new": {
+     "title": "New",
+     "type": "number"
+    },
+    "old": {
+     "title": "Old",
+     "type": "number"
+    },
+    "param": {
+     "title": "Param",
+     "type": "string"
+    },
+    "source_new": {
+     "title": "Source New",
+     "type": "string"
+    }
+   },
+   "required": [
+    "param",
+    "old",
+    "new",
+    "kind_old",
+    "kind_new",
+    "source_new",
+    "measured",
+    "changed"
+   ],
+   "title": "WorldRow",
+   "type": "object"
+  }
+ },
+ "additionalProperties": false,
+ "description": "What a candidate library change does, computed by code (N4). Stored; never recomputed.",
+ "properties": {
+  "consumers": {
+   "items": {
+    "type": "string"
+   },
+   "title": "Consumers",
+   "type": "array"
+  },
+  "created_at": {
+   "title": "Created At",
+   "type": "string"
+  },
+  "created_by": {
+   "title": "Created By",
+   "type": "string"
+  },
+  "field_summaries": {
+   "items": {
+    "$ref": "#/$defs/FieldSummary"
+   },
+   "title": "Field Summaries",
+   "type": "array"
+  },
+  "id": {
+   "title": "Id",
+   "type": "string"
+  },
+  "library_file": {
+   "title": "Library File",
+   "type": "string"
+  },
+  "library_patch": {
+   "title": "Library Patch",
+   "type": "string"
+  },
+  "library_patch_sha": {
+   "title": "Library Patch Sha",
+   "type": "string"
+  },
+  "library_path": {
+   "title": "Library Path",
+   "type": "string"
+  },
+  "new_quantity": {
+   "additionalProperties": true,
+   "title": "New Quantity",
+   "type": "object"
+  },
+  "old_quantity": {
+   "additionalProperties": true,
+   "title": "Old Quantity",
+   "type": "object"
+  },
+  "profile_rows": {
+   "items": {
+    "$ref": "#/$defs/ProfileRow"
+   },
+   "title": "Profile Rows",
+   "type": "array"
+  },
+  "profiles_sha": {
+   "title": "Profiles Sha",
+   "type": "string"
+  },
+  "reflex_rows": {
+   "items": {
+    "$ref": "#/$defs/ReflexRow"
+   },
+   "title": "Reflex Rows",
+   "type": "array"
+  },
+  "sentences": {
+   "items": {
+    "type": "string"
+   },
+   "title": "Sentences",
+   "type": "array"
+  },
+  "unchanged_fields": {
+   "default": 0,
+   "title": "Unchanged Fields",
+   "type": "integer"
+  },
+  "world_available": {
+   "default": false,
+   "title": "World Available",
+   "type": "boolean"
+  },
+  "world_note": {
+   "default": "",
+   "title": "World Note",
+   "type": "string"
+  },
+  "world_reached": {
+   "default": false,
+   "title": "World Reached",
+   "type": "boolean"
+  },
+  "world_rows": {
+   "items": {
+    "$ref": "#/$defs/WorldRow"
+   },
+   "title": "World Rows",
+   "type": "array"
+  }
+ },
+ "required": [
+  "id",
+  "created_by",
+  "library_path",
+  "library_file",
+  "old_quantity",
+  "new_quantity",
+  "library_patch",
+  "library_patch_sha",
+  "profiles_sha"
+ ],
+ "title": "Impact",
+ "type": "object"
+}

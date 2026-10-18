@@ -1,6 +1,18 @@
 {
  "additionalProperties": false,
  "properties": {
+  "action_id": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Action Id"
+  },
   "claim_ids": {
    "items": {
     "type": "string"

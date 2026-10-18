@@ -88,3 +88,33 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
     for item in items:
         if item.get_closest_marker("profiles"):
             item.add_marker(skip)
+
+
+KANG_DOI = "10.1152/jn.90641.2008"
+KANG_SOURCE = f"src:{KANG_DOI}"
+OPTICS_QUOTE = (
+    "Expressed in retinal illuminance, after correcting for the larger pupil and ocular "
+    "transmission, the cat's scotopic threshold was -0.08 log units re human."
+)
+
+
+def store_kang_text(store: Store) -> None:
+    """Put the synthetic Kang fixture into the ledger as fetched full text (as fetch would)."""
+    from senseai_profiles.curate.fetch import _xml_text, normalise
+
+    from senseai_research.ledger.models import Source
+
+    text, sections = _xml_text((FIXTURES / "papers" / "PMC2724355.xml").read_text())
+    sha = store.store_text(normalise(text), list(sections))
+    cur = store.get("source", KANG_SOURCE, Source)
+    base = cur or Source(id=KANG_SOURCE, created_by="pipeline:test@0", doi=KANG_DOI)
+    store.put_source(
+        base.model_copy(
+            update={
+                "fulltext_available": True,
+                "fetched_text_sha256": sha,
+                "fetched_from": "europepmc",
+            }
+        ),
+        "pipeline:test@0",
+    )

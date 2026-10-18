@@ -360,3 +360,10 @@ Where they disagree, the code wins.
 11. **Record details.** A claim imported from the library with no quote has `provenance: library`
     (the spec lists only pipeline, user and agent-proposed). An Approval's `target` is a pending
     action id plus a `target_kind` (`claim_revision | new_claim | hypothesis | proposal`).
+12. **PR workspace (D6).** The PR branch is made in a `git clone --shared` copy of the profiles
+    checkout, not in a `git worktree`. A worktree writes `.git/worktrees/` into the base checkout;
+    the shared clone writes nothing there. The branch name `research/<proposal-id>`, the token
+    push and `POST /repos/{o}/{r}/pulls` are as specified. Library edits also add the source to
+    `citations` and an `evidence` item (DOI, verbatim quote, section), which the library schema
+    defines for exactly this. The patched entry must pass `validate_entry` before anything is
+    pushed.

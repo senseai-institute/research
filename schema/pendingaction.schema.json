@@ -1,0 +1,110 @@
+{
+ "additionalProperties": false,
+ "description": "What an agent write tool produces: nothing changes until a person approves it (N1).",
+ "properties": {
+  "approval_id": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Approval Id"
+  },
+  "card": {
+   "additionalProperties": true,
+   "title": "Card",
+   "type": "object"
+  },
+  "conversation_id": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Conversation Id"
+  },
+  "created_at": {
+   "title": "Created At",
+   "type": "string"
+  },
+  "created_by": {
+   "title": "Created By",
+   "type": "string"
+  },
+  "error": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Error"
+  },
+  "id": {
+   "title": "Id",
+   "type": "string"
+  },
+  "input": {
+   "additionalProperties": true,
+   "title": "Input",
+   "type": "object"
+  },
+  "kind": {
+   "enum": [
+    "claim_revision",
+    "new_claim",
+    "hypothesis",
+    "proposal"
+   ],
+   "title": "Kind",
+   "type": "string"
+  },
+  "result": {
+   "additionalProperties": true,
+   "title": "Result",
+   "type": "object"
+  },
+  "status": {
+   "default": "pending",
+   "enum": [
+    "pending",
+    "approved",
+    "rejected",
+    "failed"
+   ],
+   "title": "Status",
+   "type": "string"
+  },
+  "tool_use_id": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Tool Use Id"
+  }
+ },
+ "required": [
+  "id",
+  "created_by",
+  "kind",
+  "input"
+ ],
+ "title": "PendingAction",
+ "type": "object"
+}
