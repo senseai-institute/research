@@ -70,7 +70,7 @@ def create_app(
     trusted = set(trusted_hosts)
     busy: set[str] = set()
     busy_lock = threading.Lock()
-    health_cache: dict[str, Any] = {"t": 0.0, "model": (False, "not checked")}
+    health_cache: dict[str, Any] = {"t": None, "model": (False, "not checked")}
 
     app = FastAPI(title="senseai-research", version=__version__)
 
@@ -275,7 +275,8 @@ def create_app(
 
     @app.get("/api/research/health")
     def health() -> dict[str, Any]:
-        if time.monotonic() - health_cache["t"] > 60:
+        # monotonic() counts from boot, so a fresh machine can read under 60: check on first use.
+        if health_cache["t"] is None or time.monotonic() - health_cache["t"] > 60:
             health_cache.update(t=time.monotonic(), model=check_model())
         ok, why = health_cache["model"]
         return {
