@@ -17,6 +17,8 @@ from senseai_research.ledger.models import Claim, Hypothesis, Passage, Source
 from senseai_research.ledger.store import Store
 from tests.conftest import real_profiles
 
+pytestmark = pytest.mark.profiles
+
 
 def _quantity_paths(root: Path) -> list[str]:
     from senseai_profiles.library import load_library

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 from __future__ import annotations
 
+import importlib.util
 import os
 import socket
 from collections.abc import Iterator
@@ -12,6 +13,7 @@ from senseai_research.config import Settings
 from senseai_research.ledger.store import Store
 
 FIXTURES = Path(__file__).parent / "fixtures"
+HAVE_PROFILES = importlib.util.find_spec("senseai_profiles") is not None
 PROFILES = FIXTURES / "profiles"
 
 
@@ -61,3 +63,13 @@ def real_profiles() -> Path | None:
     """A full profiles checkout, when the environment provides one (CI does)."""
     p = os.environ.get("SENSEAI_PROFILES_REPO")
     return Path(p) if p and (Path(p) / "library").is_dir() else None
+
+
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    """Tests marked ``profiles`` need senseai-profiles (private); skip them without it."""
+    if HAVE_PROFILES:
+        return
+    skip = pytest.mark.skip(reason="senseai-profiles is not installed (private; see CI notes)")
+    for item in items:
+        if item.get_closest_marker("profiles"):
+            item.add_marker(skip)
