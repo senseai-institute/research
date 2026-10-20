@@ -67,7 +67,7 @@ def fetch_fulltext(ctx: ToolContext, a: dict[str, Any]) -> ToolOutput:
 
 
 def extract_from_source(ctx: ToolContext, a: dict[str, Any]) -> ToolOutput:
-    from senseai_profiles.curate.fetch import PaperText
+    from senseai_research.curate.fetch import PaperText
 
     src = ctx.store.get("source", a["source_id"], Source)
     if src is None or not src.fetched_text_sha256:

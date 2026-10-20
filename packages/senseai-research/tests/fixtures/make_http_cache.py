@@ -13,9 +13,9 @@ import json
 import shutil
 from pathlib import Path
 
-from senseai_profiles.curate.cache import CachedClient, CachedResponse, cache_key
-from senseai_profiles.curate.fetch import EUROPEPMC_FT
-from senseai_profiles.curate.search import EUROPEPMC
+from senseai_research.curate.cache import CachedClient, CachedResponse, cache_key
+from senseai_research.curate.fetch import EUROPEPMC_FT
+from senseai_research.curate.search import EUROPEPMC
 
 HERE = Path(__file__).parent
 DOI = "10.1152/jn.90641.2008"

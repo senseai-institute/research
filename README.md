@@ -12,9 +12,9 @@ the correction does to the robot, and sign off on a library change.
 
 The full design is in [`docs/SPEC.md`](docs/SPEC.md).
 
-> **Status: phase 4 of 6.** Everything below works, including the `/research` page in the
-> viewer. Still to come: moving the curate pipeline into this repo (phase 5) and the one-command
-> EC2 install (phase 6).
+> **Status: phase 5 of 6.** Everything below works: the `/research` page in the viewer, and the
+> curate pipeline (`senseai-library`), which now lives here. Still to come: the one-command EC2
+> install (phase 6).
 
 ## For a researcher
 
@@ -121,6 +121,19 @@ profiles checkout, so the checkout itself is never written.
 
 `import` is safe to run again. Values that changed upstream become new revisions; nothing is
 overwritten.
+
+### Drafting library entries (`senseai-library`)
+
+The literature pipeline that drafts `library/<clade>.yaml` from papers moved here from profiles
+(module `senseai_research.curate`). It reads and writes the profiles checkout in
+`SENSEAI_PROFILES_REPO` (or `--root`):
+
+```bash
+senseai-library draft felidae          # search, fetch open access, extract with quotes, review sheet
+senseai-library approve felidae --reviewer "Name"
+```
+
+`senseai_profiles.curate` still works as a deprecated alias.
 
 ## Development
 

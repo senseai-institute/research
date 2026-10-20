@@ -91,7 +91,7 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
         return
     skip = pytest.mark.skip(reason="senseai-profiles is not installed (private; see CI notes)")
     for item in items:
-        if item.get_closest_marker("profiles"):
+        if item.get_closest_marker("profiles") or "/tests/curate/" in str(item.path):
             item.add_marker(skip)
 
 
@@ -105,8 +105,7 @@ OPTICS_QUOTE = (
 
 def store_kang_text(store: Store) -> None:
     """Put the synthetic Kang fixture into the ledger as fetched full text (as fetch would)."""
-    from senseai_profiles.curate.fetch import _xml_text, normalise
-
+    from senseai_research.curate.fetch import _xml_text, normalise
     from senseai_research.ledger.models import Source
 
     text, sections = _xml_text((FIXTURES / "papers" / "PMC2724355.xml").read_text())
