@@ -15,7 +15,8 @@ The full design is in [`docs/SPEC.md`](docs/SPEC.md).
 > **Status: phase 2 of 6.** The ledger works (import, export, history, write rules). Impact
 > previews work: what a library change does to Panther's profile, reflex and world prior. So do
 > experiments: the change runs on real night recordings through the bench, compared with an
-> unchanged baseline. The chat and the `/research` page come in later phases.
+> unchanged baseline. Changes wait for a person's approval and then become a pull request on
+> profiles. The chat and the `/research` page come in later phases.
 
 ## For a researcher
 
@@ -51,6 +52,21 @@ The table shows each arm's hit rate before and after, with the **chance hit rate
 how often the arm would "hit" by luck alone. A hit rate is meaningful only well above its chance
 rate. With fewer than 20 labelled objects the table says "too few objects to judge" instead of
 a percentage.
+
+### Approving a change
+
+Nothing reaches the ledger or the library until a person approves it with a reason:
+
+```bash
+senseai-research pending                         # what is waiting, with the quote it rests on
+senseai-research approve act-… --rationale "For a camera the lens replaces the pupil."
+senseai-research reject  act-… --rationale "The pupil value is the one we want."
+```
+
+Approving a library change opens a pull request on profiles (with `GITHUB_TOKEN` set). Without
+a token, the patch and the PR text are saved under `RESEARCH_DATA/outbox/`. The PR lists each
+value with its paper and verbatim quote, your reason, the impact table and the experiment
+results, and says who approved it and when.
 
 ## For an operator
 

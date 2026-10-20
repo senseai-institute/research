@@ -241,6 +241,7 @@ ProposalStatus = Literal["draft", "approved", "pr_open", "merged", "closed"]
 
 
 class Proposal(Record):
+    action_id: str | None = None  # the pending action whose Approval this proposal carries
     claim_ids: list[str]
     library_file: str
     yaml_patch: str
@@ -350,6 +351,24 @@ class Impact(Record):
     sentences: list[str] = Field(default_factory=list)
 
 
+ActionKind = Literal["claim_revision", "new_claim", "hypothesis", "proposal"]
+ActionStatus = Literal["pending", "approved", "rejected", "failed"]
+
+
+class PendingAction(Record):
+    """What an agent write tool produces: nothing changes until a person approves it (N1)."""
+
+    kind: ActionKind
+    conversation_id: str | None = None
+    tool_use_id: str | None = None
+    input: dict[str, Any]
+    card: dict[str, Any] = Field(default_factory=dict)
+    status: ActionStatus = "pending"
+    approval_id: str | None = None
+    result: dict[str, Any] = Field(default_factory=dict)
+    error: str | None = None
+
+
 class Event(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -364,6 +383,8 @@ __all__ = [
     "CLAIM_STATUSES",
     "HUMAN_ONLY_STATUSES",
     "NEEDS_PASSAGE",
+    "ActionKind",
+    "ActionStatus",
     "Approval",
     "ArmResult",
     "Claim",
@@ -377,6 +398,7 @@ __all__ = [
     "Impact",
     "MappingKind",
     "Passage",
+    "PendingAction",
     "ProfileRow",
     "Proposal",
     "Provenance",

@@ -2,7 +2,7 @@
 """``senseai-research``: the command line.
 
 Commands: ``import``, ``export``, ``schema``, ``backup``, ``claims``, ``impact``,
-``experiment``.
+``experiment``, ``pending``, ``approve``, ``reject``.
 """
 
 from __future__ import annotations
@@ -94,6 +94,8 @@ def cmd_schema(a: argparse.Namespace, cfg: Settings) -> int:
         "Experiment",
         "Proposal",
         "Approval",
+        "PendingAction",
+        "Impact",
         "Event",
     ]
     for n in names:
@@ -227,6 +229,54 @@ def cmd_experiment(a: argparse.Namespace, cfg: Settings) -> int:
     print(f"\nExperiment {pat.id} (baseline {base.id})")
     print(table(compare(base, pat)))
     return 0 if pat.status == "done" else 1
+
+
+@command("pending", "list changes waiting for a person to approve or reject")
+def cmd_pending(a: argparse.Namespace, cfg: Settings) -> int:
+    from senseai_research.actions import pending
+
+    items = pending(open_store(cfg))
+    if not items:
+        print("Nothing is waiting for approval.")
+    for act in items:
+        print(f"{act.id}  {act.card.get('title', act.kind)}")
+        print(f"    {act.card.get('summary', '')}")
+        for r in act.card.get("rows", []):
+            print(f"    {r['label']}: {r['before']} -> {r['after']}")
+        if act.card.get("quote"):
+            print(f"    quote: “{act.card['quote']}”")
+    return 0
+
+
+def _decide_args(p: argparse.ArgumentParser) -> None:
+    p.add_argument("action_id")
+    p.add_argument("--rationale", required=True, help="why (at least one sentence)")
+    p.add_argument("--user", default=None, help="your name (default: $USER)")
+
+
+def _decide(a: argparse.Namespace, cfg: Settings, decision: str) -> int:
+    import getpass
+
+    from senseai_research import actions
+
+    store = open_store(cfg)
+    by = f"user:{a.user or getpass.getuser()}"
+    if decision == "approve":
+        out = actions.approve(store, cfg, a.action_id, by=by, rationale=a.rationale)
+    else:
+        out = actions.reject(store, a.action_id, by=by, rationale=a.rationale)
+    print(out.message)
+    return 0 if out.action.status in ("approved", "rejected") else 1
+
+
+@command("approve", "approve a pending change (records who and why)", _decide_args)
+def cmd_approve(a: argparse.Namespace, cfg: Settings) -> int:
+    return _decide(a, cfg, "approve")
+
+
+@command("reject", "reject a pending change (records who and why)", _decide_args)
+def cmd_reject(a: argparse.Namespace, cfg: Settings) -> int:
+    return _decide(a, cfg, "reject")
 
 
 def build_parser() -> argparse.ArgumentParser:
