@@ -27,4 +27,15 @@ def make_client() -> anthropic.Anthropic:
     return anthropic.Anthropic(max_retries=2)
 
 
-__all__ = ["Factory", "make_client", "set_client_factory"]
+NO_KEY = (
+    "The assistant has no Claude API key: set ANTHROPIC_API_KEY on the research server "
+    "(the Settings tab lists every key)."
+)
+
+
+def missing_credentials(e: BaseException) -> bool:
+    """The SDK found no API key or other credential (it raises ``TypeError`` at request time)."""
+    return isinstance(e, TypeError) and "authentication method" in str(e)
+
+
+__all__ = ["NO_KEY", "Factory", "make_client", "missing_credentials", "set_client_factory"]

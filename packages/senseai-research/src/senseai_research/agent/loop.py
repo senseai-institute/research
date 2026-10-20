@@ -31,7 +31,7 @@ from typing import Any
 import anthropic
 
 from senseai_research.agent import numbers
-from senseai_research.agent.client import make_client
+from senseai_research.agent.client import NO_KEY, make_client, missing_credentials
 from senseai_research.agent.prompts import SYSTEM_PROMPT
 from senseai_research.agent.tools import (
     BY_NAME,
@@ -233,6 +233,12 @@ class AgentLoop:
                 break
             except anthropic.APIConnectionError:
                 emit("error", {"message": "Could not reach the model service."})
+                res.stop = "error"
+                break
+            except TypeError as e:
+                if not missing_credentials(e):
+                    raise
+                emit("error", {"message": NO_KEY, "code": "no_api_key"})
                 res.stop = "error"
                 break
             self._record(conversation_id, step, final)

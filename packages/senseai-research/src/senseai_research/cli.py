@@ -12,6 +12,7 @@ import argparse
 import json
 import sqlite3
 import sys
+import tempfile
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
@@ -299,20 +300,28 @@ def cmd_agent_doc(a: argparse.Namespace, cfg: Settings) -> int:
 
 
 def _api_doc_args(p: argparse.ArgumentParser) -> None:
-    p.add_argument("--out", default="docs/APIS.md")
+    p.add_argument("--dir", default="docs")
 
 
 @command(
     "api-doc",
-    "write docs/APIS.md (outside services and their API keys) from the code",
+    "write docs/API.md (routes and chat events) and docs/APIS.md (API keys) from the code",
     _api_doc_args,
 )
 def cmd_api_doc(a: argparse.Namespace, cfg: Settings) -> int:
-    from senseai_research.integrations import render_doc
+    from senseai_research import integrations
+    from senseai_research.server import contract
+    from senseai_research.server.app import create_app
 
-    Path(a.out).parent.mkdir(parents=True, exist_ok=True)
-    Path(a.out).write_text(render_doc())
-    print(f"wrote {a.out}")
+    out = Path(a.dir)
+    out.mkdir(parents=True, exist_ok=True)
+    app = create_app(cfg.with_(data=Path(tempfile.mkdtemp(prefix="research-doc-"))))
+    for name, text in (
+        ("API.md", contract.render_doc(app)),
+        ("APIS.md", integrations.render_doc()),
+    ):
+        (out / name).write_text(text)
+        print(f"wrote {out / name}")
     return 0
 
 
@@ -435,19 +444,33 @@ def cmd_ask(a: argparse.Namespace, cfg: Settings) -> int:
 
 
 def _serve_args(p: argparse.ArgumentParser) -> None:
-    p.add_argument("--port", type=int, default=None, help="default: $RESEARCH_PORT or 8100")
+    p.add_argument("--port", type=int, default=None, help="default: $RESEARCH_PORT, $PORT or 8100")
+    p.add_argument("--host", default=None, help="default: $RESEARCH_HOST or 127.0.0.1")
+
+
+LOOPBACK_HOSTS = ("127.0.0.1", "::1", "localhost")
 
 
 @command(
-    "serve", "run the research server on 127.0.0.1 (the viewer proxies /api/research)", _serve_args
+    "serve",
+    "run the research server (127.0.0.1 by default; Studio or the viewer proxies /api/research)",
+    _serve_args,
 )
 def cmd_serve(a: argparse.Namespace, cfg: Settings) -> int:
     import uvicorn
 
     from senseai_research.server.app import create_app
 
-    port = a.port or cfg.port
-    uvicorn.run(create_app(cfg), host="127.0.0.1", port=port, log_level="info")
+    host = a.host or cfg.host
+    if host not in LOOPBACK_HOSTS and not cfg.proxy_token:
+        print(
+            f"refusing to listen on {host} without RESEARCH_PROXY_TOKEN: anyone who can reach "
+            "the port could approve changes in someone else's name. Set the same random token "
+            "on this server and on Studio.",
+            file=sys.stderr,
+        )
+        return 2
+    uvicorn.run(create_app(cfg), host=host, port=a.port or cfg.port, log_level="info")
     return 0
 
 
