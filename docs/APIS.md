@@ -29,6 +29,7 @@ which keys are set and tests each one. It never shows a key's value.
 | Catalogue of Life (ChecklistBank) | No key needed | none | A second check of species names and synonyms. |
 | Wikidata | No key needed | none | Common names for species. |
 | IUCN Red List | Optional | `IUCN_API_TOKEN` | Conservation status of each species, shown on the review sheet. |
+| Studio connection | Optional | `RESEARCH_PROXY_TOKEN` | A shared secret Studio sends with every request, so the research server can trust the signed-in name Studio forwards. Set the same value on both services. |
 | GitHub | Optional | `GITHUB_TOKEN` | Opens the pull request on senseai-institute/profiles after a person approves a library change. Use a fine-grained token with Contents and Pull requests (read and write) on that one repository only. |
 | Amazon S3 | Optional | `RESEARCH_CURATE_S3`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | Copies ledger backups and the download cache to a bucket, so nothing is lost if the server's disk is. |
 
@@ -171,6 +172,17 @@ Conservation status of each species, shown on the review sheet.
 - **Without it:** Conservation status is left for the reviewer to fill in.
 - **Get a key:** https://api.iucnredlist.org/users/sign_up
 
+## Connection
+
+### Studio connection
+
+A shared secret Studio sends with every request, so the research server can trust the signed-in name Studio forwards. Set the same value on both services.
+
+- **Needed:** Optional.
+- **Variable:** `RESEARCH_PROXY_TOKEN`, secret.
+- **Without it:** The research server answers only callers on its own machine, so Studio must run beside it. Required when Studio reaches it over a network, as on Railway.
+- **Get a key:** Any long random string, e.g. the output of: openssl rand -hex 32
+
 ## Library changes
 
 ### GitHub
@@ -215,6 +227,9 @@ PUBPEER_API_KEY=
 
 # Species names
 IUCN_API_TOKEN=
+
+# Connection
+RESEARCH_PROXY_TOKEN=
 
 # Library changes
 GITHUB_TOKEN=

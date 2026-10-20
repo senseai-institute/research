@@ -36,6 +36,8 @@ class Settings:
     model: str = DEFAULT_MODEL
     stack_dir: Path | None = None
     world_params: Path | None = None
+    host: str = "127.0.0.1"
+    proxy_token: str | None = None  # shared with Studio; required to listen beyond loopback
 
     @property
     def db_path(self) -> Path:
@@ -66,7 +68,7 @@ class Settings:
     def from_env(cls) -> Settings:
         return cls(
             data=_path("RESEARCH_DATA") or Path.home() / "senseai" / "research",
-            port=int(os.environ.get("RESEARCH_PORT", "8100")),
+            port=int(os.environ.get("RESEARCH_PORT") or os.environ.get("PORT") or "8100"),
             profiles_repo=_path("SENSEAI_PROFILES_REPO"),
             data_root=_path("SENSEAI_DATA_ROOT"),
             bench_cmd=os.environ.get("SENSEAI_BENCH_CMD", "senseai-bench"),
@@ -80,6 +82,8 @@ class Settings:
             model=os.environ.get("RESEARCH_MODEL", DEFAULT_MODEL),
             stack_dir=_path("SENSEAI_STACK_DIR"),
             world_params=_path("SENSEAI_WORLD_PARAMS"),
+            host=os.environ.get("RESEARCH_HOST") or "127.0.0.1",
+            proxy_token=os.environ.get("RESEARCH_PROXY_TOKEN") or None,
         )
 
 

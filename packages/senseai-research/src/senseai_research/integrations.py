@@ -387,6 +387,18 @@ INTEGRATIONS: tuple[Integration, ...] = (
         ),
     ),
     Integration(
+        "studio",
+        "Studio connection",
+        "Connection",
+        "A shared secret Studio sends with every request, so the research server can trust "
+        "the signed-in name Studio forwards. Set the same value on both services.",
+        "optional",
+        "The research server answers only callers on its own machine, so Studio must run "
+        "beside it. Required when Studio reaches it over a network, as on Railway.",
+        "Any long random string, e.g. the output of: openssl rand -hex 32",
+        (Var("RESEARCH_PROXY_TOKEN"),),
+    ),
+    Integration(
         "github",
         "GitHub",
         "Library changes",
