@@ -1,0 +1,39 @@
+# Generated/updated by `senseai-profiles research sync`. Edit status, leads, acceptance
+# and answer freely; `why` and `quantity.current_*` are re-derived on every sync.
+id: felidae-q-1
+status: queued
+target: felidae.open_questions
+target_kind: library
+kind: missing
+question: No sensory measurements from Panthera species have been verified for this entry. Treat every
+  value as domestic cat.
+quantity:
+  unit: unknown
+why:
+  consumers:
+  - panther.frame.gain_lut (vision_supply_vs_demand)
+  - panther.event.attention (vision_deficit_boost)
+  - panther_vision.frame.gain_lut (vision_supply_vs_demand)
+  - panther_vision.event.attention (vision_deficit_boost)
+  - panther.reflex.commit_threshold (from_latency)
+  priority: critical
+  rationale: clade-level open question in the library entry
+acceptance:
+  confidence: medium
+  min_sources: 1
+  species:
+  - Felis catus
+sources_allowed:
+- peer_reviewed
+- datasheet
+- bench_measurement
+- proprietary
+leads: []
+answer: null
+created: '2026-10-14T23:17:40+00:00'
+origin: sync
+history:
+- at: '2026-10-14T23:17:40+00:00'
+  status: queued
+  note: created by sync
+updated: '2026-10-17T20:09:30+00:00'

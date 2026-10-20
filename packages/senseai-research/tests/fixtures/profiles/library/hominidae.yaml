@@ -1,0 +1,68 @@
+# SPDX-License-Identifier: CC-BY-4.0
+# Species Sensory Library — Hominidae (great apes, here: human).
+# Reference entry. Many measurements of other animals are reported relative
+# to the human ("x times more sensitive than human"); this entry anchors those
+# ratios to absolute units. Full references: library/CITATIONS.md
+
+clade: Hominidae
+rank: family
+common_names: [great apes, humans]
+
+representative_species:
+  - name: Homo sapiens
+    common_name: human
+    notes: All values are human psychophysics.
+
+conservation:
+  iucn: mixed
+  source: https://www.iucnredlist.org/
+  notes: Humans are Least Concern; the other great apes are Endangered or Critically Endangered.
+
+senses:
+  - id: vision
+    modality: vision
+    organ: camera eye, duplex retina, no tapetum
+    signal: light, about 400-700 nm
+    detection_threshold:
+      value: [54, 148]
+      unit: photons at cornea
+      confidence: high
+      species: Homo sapiens
+      conditions: >-
+        Fully dark-adapted, 510 nm, 1 ms flash, 10 arcmin field, 20 deg
+        temporal from the fovea; range across observers. Corrected for ocular
+        losses this is 5-14 photons absorbed by rods.
+      citations:
+        - 10.1085/jgp.25.6.819
+        - https://pmc.ncbi.nlm.nih.gov/articles/PMC2142545
+    measurements:
+      - id: scotopic_luminance_floor
+        description: >-
+          Scene luminance at which steady vision is near its absolute limit
+          (appearance degrades into temporal noise).
+        value: 0.0001
+        unit: cd/m^2
+        confidence: low
+        species: Homo sapiens
+        notes: >-
+          Order of magnitude from a review of night-vision appearance rather
+          than a threshold measurement. Used only as an anchor for converting
+          relative animal thresholds into scene units; replace with a primary
+          psychophysical source when one is verified.
+        citations: [https://resources.mpi-inf.mpg.de/DarkNoise/article.pdf]
+    notes: >-
+      Reported photon counts are at the cornea for a brief flash. Converting
+      to a steady scene luminance or illuminance needs stated assumptions
+      about pupil area, integration time and surface reflectance; a rule that
+      does so must state them.
+    citations:
+      - 10.1085/jgp.25.6.819
+
+behaviours: []
+
+contributors:
+  - name: Claude Code (Anthropic)
+    role: drafted-by-ai
+
+review_status: draft
+version: 0.1.0

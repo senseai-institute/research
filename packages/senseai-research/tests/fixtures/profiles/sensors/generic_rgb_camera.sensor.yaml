@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: Apache-2.0
+# PLACEHOLDER. Typical values for a consumer global-shutter RGB camera, not a
+# measurement of any unit. Replace with the chosen device's datasheet values
+# before anything built on it is trusted.
+
+id: generic_rgb_camera
+kind: rgb_camera
+description: stand-in for an ordinary machine-vision RGB camera
+placeholder: true
+notes: >-
+  Numbers are order-of-magnitude estimates chosen to be plausible for a
+  1/2.8-inch class CMOS sensor. The SNR curve follows a photon-shot-noise
+  model with a 2 e- read noise and saturation near 10^4 lux; it is a shape,
+  not a datasheet.
+version: 0.1.0
+
+capabilities:
+  resolution_px: {value: [1280, 800], unit: px}
+  field_of_view_deg: {value: [90, 60], unit: deg}
+  frame_rate_hz: {value: 60, unit: Hz}
+  latency_ms: {value: 20, unit: ms, conditions: exposure start to frame available}
+  dynamic_range_db: {value: 70, unit: dB}
+  spectral_range_nm: {value: [400, 700], unit: nm}
+  read_noise_e: {value: 2.0, unit: e-}
+  usable_illuminance_lux: {value: [1, 20000], unit: lux}
+  snr_curve:
+    x: [0.01, 0.1, 1, 10, 100, 1000, 10000]
+    y: [-10, 0, 10, 20, 30, 40, 42]
+    x_unit: lux
+    x_scale: log
+    y_unit: dB
+    conditions: auto exposure, mid-grey target

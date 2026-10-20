@@ -1,0 +1,113 @@
+{
+ "additionalProperties": false,
+ "properties": {
+  "claim_ids": {
+   "items": {
+    "type": "string"
+   },
+   "title": "Claim Ids",
+   "type": "array"
+  },
+  "created_at": {
+   "title": "Created At",
+   "type": "string"
+  },
+  "created_by": {
+   "title": "Created By",
+   "type": "string"
+  },
+  "experiment_ids": {
+   "items": {
+    "type": "string"
+   },
+   "title": "Experiment Ids",
+   "type": "array"
+  },
+  "id": {
+   "title": "Id",
+   "type": "string"
+  },
+  "impact_ids": {
+   "items": {
+    "type": "string"
+   },
+   "title": "Impact Ids",
+   "type": "array"
+  },
+  "library_file": {
+   "title": "Library File",
+   "type": "string"
+  },
+  "patch_file": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Patch File"
+  },
+  "pr_body_file": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Pr Body File"
+  },
+  "pr_url": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Pr Url"
+  },
+  "rationale": {
+   "title": "Rationale",
+   "type": "string"
+  },
+  "status": {
+   "default": "draft",
+   "enum": [
+    "draft",
+    "approved",
+    "pr_open",
+    "merged",
+    "closed"
+   ],
+   "title": "Status",
+   "type": "string"
+  },
+  "title": {
+   "default": "",
+   "title": "Title",
+   "type": "string"
+  },
+  "yaml_patch": {
+   "title": "Yaml Patch",
+   "type": "string"
+  }
+ },
+ "required": [
+  "id",
+  "created_by",
+  "claim_ids",
+  "library_file",
+  "yaml_patch",
+  "rationale"
+ ],
+ "title": "Proposal",
+ "type": "object"
+}

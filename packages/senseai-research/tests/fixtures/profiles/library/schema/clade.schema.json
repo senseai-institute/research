@@ -1,0 +1,581 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://senseai.institute/library/schema/clade.schema.json",
+  "$comment": "SPDX-License-Identifier: Apache-2.0. Species Sensory Library entry schema. Describes an animal clade's sensory biology; contains no robot- or vendor-specific fields.",
+  "title": "Species Sensory Library clade entry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "clade",
+    "rank",
+    "common_names",
+    "conservation",
+    "senses",
+    "behaviours",
+    "contributors",
+    "version",
+    "review_status"
+  ],
+  "properties": {
+    "clade": {
+      "description": "Latin name of the clade, capitalised as in the taxonomic literature (e.g. Felidae).",
+      "type": "string",
+      "pattern": "^[A-Z][a-z]+$"
+    },
+    "rank": {
+      "type": "string",
+      "enum": [
+        "class",
+        "subclass",
+        "order",
+        "suborder",
+        "family",
+        "subfamily",
+        "genus",
+        "species"
+      ]
+    },
+    "common_names": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "representative_species": {
+      "description": "Species whose measurements this entry mostly relies on. Clade-level entries are usually built from a few well-studied species; say which.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[A-Z][a-z]+ [a-z]+( [a-z]+)?$"
+          },
+          "common_name": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "conservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "iucn",
+        "source"
+      ],
+      "properties": {
+        "iucn": {
+          "description": "IUCN Red List category. Use 'mixed' for a clade whose members differ, and list examples in notes.",
+          "type": "string",
+          "enum": [
+            "EX",
+            "EW",
+            "CR",
+            "EN",
+            "VU",
+            "NT",
+            "LC",
+            "DD",
+            "NE",
+            "mixed"
+          ]
+        },
+        "source": {
+          "$ref": "#/$defs/citation"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "senses": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/sense"
+      }
+    },
+    "behaviours": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/behaviour"
+      }
+    },
+    "open_questions": {
+      "description": "Known gaps: quantities that matter for this clade but have no source the authors could verify. Contributions welcome.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "contributors": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "role"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "author",
+              "reviewer",
+              "drafted-by-ai"
+            ]
+          },
+          "orcid": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{4}-\\d{4}-\\d{3}[\\dX]$"
+          },
+          "affiliation": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "review_status": {
+      "description": "draft: not yet checked by a domain expert. reviewed: at least one contributor with role 'reviewer' has checked every value against its citation.",
+      "type": "string",
+      "enum": [
+        "draft",
+        "reviewed"
+      ]
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "curated_by": {
+      "type": "string",
+      "description": "e.g. 'senseai-curate 0.1.0'; absent on hand-written entries"
+    },
+    "curated_at": {
+      "type": "string"
+    },
+    "reviewed_by": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Set by `senseai-library approve`; null until then"
+    },
+    "reviewed_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "curation": {
+      "description": "Machine bookkeeping for reproducibility.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "queries": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "cache_digest": {
+          "type": "string",
+          "description": "SHA-256 over the cache entries the draft was built from"
+        },
+        "empty_paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "papers_screened": {
+          "type": "integer"
+        },
+        "claims_extracted": {
+          "type": "integer"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "citation": {
+      "description": "A bare DOI (10.xxxx/...) or an http(s) URL to a stable record (PubMed, PMC, publisher, library catalogue). Full references go in library/CITATIONS.md.",
+      "type": "string",
+      "pattern": "^(10\\.\\d{4,9}/\\S+|https?://\\S+)$"
+    },
+    "citations": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/citation"
+      }
+    },
+    "confidence": {
+      "description": "high: value stated directly in a cited primary source. medium: value from a cited source but measured under narrow conditions, or confirmed only via secondary sources. low: plausible estimate, weakly supported; do not build on it without checking.",
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ]
+    },
+    "value": {
+      "description": "A single number, or a [low, high] interval.",
+      "oneOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "items": false,
+          "minItems": 2
+        }
+      ]
+    },
+    "quantity": {
+      "description": "A measured value. Every quantity carries its unit, its own citations and a confidence level.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "unit",
+        "citations",
+        "confidence"
+      ],
+      "properties": {
+        "value": {
+          "$ref": "#/$defs/value"
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "citations": {
+          "$ref": "#/$defs/citations"
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidence"
+        },
+        "species": {
+          "description": "Species the measurement was taken on, if narrower than the clade.",
+          "type": "string",
+          "pattern": "^[A-Z][a-z]+ [a-z]+( [a-z]+)?$"
+        },
+        "conditions": {
+          "description": "Measurement conditions (adaptation state, stimulus level, method).",
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/evidence_item"
+          },
+          "description": "Where each citation states the value. Required by senseai-library for curator-written values (not by the schema, so hand-written entries stay valid)."
+        },
+        "reviewer_note": {
+          "type": "string",
+          "description": "Human decision on a low-confidence or conflicting value. `senseai-library approve` refuses a confidence: low value without one."
+        }
+      }
+    },
+    "latency": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/quantity"
+        },
+        {
+          "properties": {
+            "unit": {
+              "const": "ms"
+            }
+          }
+        }
+      ]
+    },
+    "angle": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/quantity"
+        },
+        {
+          "properties": {
+            "unit": {
+              "const": "deg"
+            }
+          }
+        }
+      ]
+    },
+    "measurement": {
+      "description": "A named quantity that does not fit the standard slots (e.g. photoreceptor density, pupil area range).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "description",
+        "value",
+        "unit",
+        "citations",
+        "confidence"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "$ref": "#/$defs/value"
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "citations": {
+          "$ref": "#/$defs/citations"
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidence"
+        },
+        "species": {
+          "type": "string",
+          "pattern": "^[A-Z][a-z]+ [a-z]+( [a-z]+)?$"
+        },
+        "conditions": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/evidence_item"
+          },
+          "description": "Where each citation states the value. Required by senseai-library for curator-written values (not by the schema, so hand-written entries stay valid)."
+        },
+        "reviewer_note": {
+          "type": "string",
+          "description": "Human decision on a low-confidence or conflicting value. `senseai-library approve` refuses a confidence: low value without one."
+        }
+      }
+    },
+    "sense": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "modality",
+        "organ",
+        "signal",
+        "citations"
+      ],
+      "properties": {
+        "id": {
+          "description": "Unique within the entry; used to refer to this sense (e.g. 'vision', 'vibrissae').",
+          "$ref": "#/$defs/id"
+        },
+        "modality": {
+          "type": "string",
+          "enum": [
+            "vision",
+            "hearing",
+            "touch",
+            "vibration",
+            "olfaction",
+            "gustation",
+            "echolocation",
+            "electroreception",
+            "magnetoreception",
+            "thermoreception",
+            "proprioception",
+            "equilibrium",
+            "polarisation"
+          ]
+        },
+        "organ": {
+          "type": "string",
+          "minLength": 1
+        },
+        "signal": {
+          "description": "Physical signal transduced (e.g. 'light, 400-650 nm', 'airborne sound pressure').",
+          "type": "string",
+          "minLength": 1
+        },
+        "detection_threshold": {
+          "description": "Smallest stimulus reliably detected. Relative thresholds are allowed; say what they are relative to in the unit (e.g. 'log10 re human').",
+          "$ref": "#/$defs/quantity"
+        },
+        "range": {
+          "description": "Operating range of the stimulus dimension the organ is tuned to (frequency, wavelength, distance...). Usually a [low, high] interval.",
+          "$ref": "#/$defs/quantity"
+        },
+        "latency_ms": {
+          "description": "Stimulus-to-response latency of the fastest behaviourally relevant response driven by this sense.",
+          "$ref": "#/$defs/latency"
+        },
+        "bandwidth": {
+          "description": "Temporal bandwidth (e.g. flicker-fusion frequency).",
+          "$ref": "#/$defs/quantity"
+        },
+        "spatial_resolution": {
+          "description": "Finest spatial discrimination (acuity in cycles/deg, minimum audible angle in deg, two-point threshold in mm...).",
+          "$ref": "#/$defs/quantity"
+        },
+        "field_of_view_deg": {
+          "$ref": "#/$defs/angle"
+        },
+        "measurements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/measurement"
+          }
+        },
+        "notes": {
+          "type": "string"
+        },
+        "citations": {
+          "$ref": "#/$defs/citations"
+        },
+        "open_questions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "behaviour": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "uses_senses",
+        "description",
+        "citations"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/id"
+        },
+        "uses_senses": {
+          "description": "Sense ids from this entry.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/id"
+          }
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "latency_ms": {
+          "$ref": "#/$defs/latency"
+        },
+        "measurements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/measurement"
+          }
+        },
+        "citations": {
+          "$ref": "#/$defs/citations"
+        },
+        "open_questions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "evidence_item": {
+      "description": "One place in one paper where this value is stated. Written by senseai-library; a human may add items by hand.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "doi",
+        "quote"
+      ],
+      "properties": {
+        "doi": {
+          "$ref": "#/$defs/citation"
+        },
+        "page_or_section": {
+          "type": "string",
+          "description": "e.g. 'p. 833', 'Results, para 2', 'Table 1', 'abstract'"
+        },
+        "quote": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300,
+          "description": "Verbatim substring of the fetched text that contains the value. Enforced by the curator before writing."
+        },
+        "conditions": {
+          "type": "string",
+          "description": "Measurement conditions as stated in the paper"
+        },
+        "source_type": {
+          "type": "string",
+          "enum": [
+            "primary",
+            "review",
+            "abstract_only",
+            "dataset"
+          ],
+          "description": "primary = the paper that made the measurement; review/abstract_only seed a claim but weigh less"
+        },
+        "fulltext": {
+          "type": "boolean",
+          "description": "false when only the abstract was available (no OA full text)"
+        },
+        "extracted_by": {
+          "type": "string",
+          "description": "senseai-curate <version> or a person"
+        }
+      }
+    }
+  }
+}

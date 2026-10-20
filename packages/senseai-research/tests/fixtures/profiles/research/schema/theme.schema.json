@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://senseai.institute/research/schema/theme.schema.json",
+  "$comment": "SPDX-License-Identifier: Apache-2.0. A theme groups evidence requests under one question that is broader than a single value.",
+  "title": "Research theme",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "status", "title", "question", "requests", "priority", "created"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$" },
+    "status": { "type": "string", "enum": ["open", "in_progress", "resolved", "parked"] },
+    "title": { "type": "string", "minLength": 1 },
+    "question": { "description": "The broader question, in one paragraph.", "type": "string", "minLength": 1 },
+    "motivation": { "description": "Which profiles or decisions depend on the answer.", "type": "string" },
+    "clades": { "type": "array", "items": { "type": "string" } },
+    "requests": { "description": "Ids of evidence requests that, together, answer the theme.", "type": "array", "items": { "type": "string" } },
+    "priority": { "type": "string", "enum": ["critical", "high", "medium", "low"] },
+    "sources_allowed": { "type": "array", "items": { "type": "string", "enum": ["peer_reviewed", "datasheet", "bench_measurement", "proprietary", "grey_literature"] } },
+    "deliverable": { "description": "What 'resolved' looks like: a value in the library, a decision, a dataset.", "type": "string" },
+    "owner": { "type": "string" },
+    "created": { "type": "string" },
+    "updated": { "type": "string" },
+    "notes": { "type": "string" }
+  }
+}

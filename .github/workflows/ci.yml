@@ -1,0 +1,90 @@
+# SPDX-License-Identifier: Apache-2.0
+# ruff, mypy, pytest. No network calls from tests and no API key (spec §13).
+#
+# senseai-profiles is a private repo. `check` runs without it: lint, types, and every test that
+# does not need profiles (those are skipped). `integration` installs profiles at the pinned SHA
+# and runs the whole suite; it needs a read token in the SENSEAI_READ_TOKEN secret (the same
+# convention as profiles' own CI). Without the secret that job is skipped, not failed.
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PROFILES_SHA: 018d2d6009959d0b66a90f234ffcb4da3c0a059d
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: packages/senseai-research
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - name: Install (without senseai-profiles)
+        run: |
+          uv venv
+          uv pip install --no-deps -e .
+          uv pip install $(python3 scripts/deps.py --without senseai-profiles --extra dev)
+      - run: uv run --no-sync ruff check .
+      - run: uv run --no-sync ruff format --check .
+      - run: uv run --no-sync mypy
+      - run: uv run --no-sync pytest -q -rs
+
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SENSEAI_READ_TOKEN: ${{ secrets.SENSEAI_READ_TOKEN }}
+    defaults:
+      run:
+        working-directory: packages/senseai-research
+    steps:
+      - name: Token present?
+        id: tok
+        working-directory: .
+        run: |
+          if [ -z "$SENSEAI_READ_TOKEN" ]; then
+            echo "::notice::SENSEAI_READ_TOKEN not set; skipping the job that installs private senseai-profiles"
+            echo "have=0" >> "$GITHUB_OUTPUT"
+          else
+            echo "have=1" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.tok.outputs.have == '1'
+      - uses: actions/checkout@v4
+        if: steps.tok.outputs.have == '1'
+        with:
+          repository: senseai-institute/profiles
+          ref: ${{ env.PROFILES_SHA }}
+          token: ${{ secrets.SENSEAI_READ_TOKEN }}
+          path: _profiles
+      - uses: astral-sh/setup-uv@v6
+        if: steps.tok.outputs.have == '1'
+        with:
+          python-version: "3.12"
+      - name: Install
+        if: steps.tok.outputs.have == '1'
+        run: |
+          git config --global url."https://x-access-token:${SENSEAI_READ_TOKEN}@github.com/".insteadOf "https://github.com/"
+          uv venv
+          uv pip install -e ".[dev]"
+      - run: uv run --no-sync mypy
+        if: steps.tok.outputs.have == '1'
+      - name: pytest (everything)
+        if: steps.tok.outputs.have == '1'
+        env:
+          SENSEAI_PROFILES_REPO: ${{ github.workspace }}/_profiles
+        run: uv run --no-sync pytest -q -rs

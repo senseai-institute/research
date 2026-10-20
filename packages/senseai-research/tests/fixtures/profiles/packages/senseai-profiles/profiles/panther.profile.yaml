@@ -1,0 +1,53 @@
+# SPDX-License-Identifier: Apache-2.0
+# Profile spec: which library entries a profile draws on, which sensor roles it
+# needs, and which rules map animal ÷ hardware → head priors. No learned numbers
+# live here; literals are hand-set design choices and the distillation report
+# labels them as such.
+#
+# Head fields follow senseai_tokens.priors.HeadPrior:
+#   gain_lut, gain_target, attention, budget_multiplier, salience_weights,
+#   channel_weights (proposed; see docs/proposals/0001-tokens-head-prior.md).
+
+name: panther
+version: 0
+clades: [felidae]
+description: night sight (vision POC); hearing and touch rules parked in this file
+
+sensors:
+  rgb_camera: required      # role → a sensor spec of kind rgb_camera
+  event_camera: required
+  # tactile_array: optional   # whisker-first only applies if present (beyond the POC)
+
+heads:
+  frame:
+    # Demand: where the cat would still see (0.74 log10 units below human).
+    # Supply: this camera's SNR curve. Confidence multiplier per patch over lux.
+    gain_lut: rule(vision_supply_vs_demand, animal=felidae.senses.vision.detection_threshold,
+                   sensor=rgb_camera.snr_curve, snr_floor_db=10, points=16)
+    gain_target: confidence
+    budget_multiplier: 0.75
+    salience_weights: rule(prefer_motion, weight=1.3)   # frame terms: {diff, edges}
+  event:
+    # Regions where the RGB camera falls short of the cat's demand get event
+    # salience boosted, up to max_boost, as long as the event camera itself is
+    # above its own noise there. Resolved per tick from scene.lux_map.
+    attention: rule(vision_deficit_boost, animal=felidae.senses.vision.detection_threshold,
+                    sensor=rgb_camera.snr_curve, event_sensor=event_camera.background_activity_eps,
+                    snr_floor_db=10, max_boost=1.5)
+  # --- Beyond the vision POC. Re-enable when hearing and touch are in scope. ---
+  # audio_bearing:
+  #   # [n_el, n_az] salience multiplier on the tokens bearing grid (5 x 36).
+  #   attention: rule(bearing_prior, front_weight=1.0, rear_weight=0.6)
+  # contact:
+  #   # Needs HeadPrior.channel_weights (proposed). Channel names come from the
+  #   # tactile_array sensor spec; the rule fails at load if they are absent.
+  #   channel_weights: rule(whisker_first, channels=tactile_array.channels, prefix=whisker_front, weight=2.0)
+
+reflex:
+  # The pounce latency is not in the library yet (felidae.yaml open_questions),
+  # so the verified 25 ms acoustic-orienting reflex stands in: 1 - 10/25 = 0.6.
+  commit_threshold: rule(from_latency, from=felidae.behaviours.acoustic_orienting.latency_ms)
+  reaction_bias: {brake: 1.0, swerve: 1.2, slow: 0.8}
+
+context:
+  scene.lux_map: required   # per-region illuminance from the frame head, each tick

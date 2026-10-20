@@ -1,0 +1,293 @@
+{
+ "$defs": {
+  "ArmResult": {
+   "additionalProperties": true,
+   "properties": {
+    "arm": {
+     "title": "Arm",
+     "type": "string"
+    },
+    "chance_hit_rate": {
+     "anyOf": [
+      {
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Chance Hit Rate"
+    },
+    "errors": {
+     "items": {
+      "type": "string"
+     },
+     "title": "Errors",
+     "type": "array"
+    },
+    "hit_rate": {
+     "anyOf": [
+      {
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Hit Rate"
+    },
+    "hits": {
+     "anyOf": [
+      {
+       "type": "integer"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Hits"
+    },
+    "latency_p99_ms": {
+     "anyOf": [
+      {
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Latency P99 Ms"
+    },
+    "median_delay_s": {
+     "anyOf": [
+      {
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Median Delay S"
+    },
+    "tracks": {
+     "anyOf": [
+      {
+       "type": "integer"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Tracks"
+    },
+    "unattributed_fires_per_h": {
+     "anyOf": [
+      {
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Unattributed Fires Per H"
+    }
+   },
+   "required": [
+    "arm"
+   ],
+   "title": "ArmResult",
+   "type": "object"
+  }
+ },
+ "additionalProperties": false,
+ "properties": {
+  "arms": {
+   "items": {
+    "type": "string"
+   },
+   "title": "Arms",
+   "type": "array"
+  },
+  "baseline_experiment_id": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Baseline Experiment Id"
+  },
+  "bench_sha": {
+   "default": "",
+   "title": "Bench Sha",
+   "type": "string"
+  },
+  "cache_key": {
+   "default": "",
+   "title": "Cache Key",
+   "type": "string"
+  },
+  "claim_ids": {
+   "items": {
+    "type": "string"
+   },
+   "title": "Claim Ids",
+   "type": "array"
+  },
+  "command": {
+   "items": {
+    "type": "string"
+   },
+   "title": "Command",
+   "type": "array"
+  },
+  "created_at": {
+   "title": "Created At",
+   "type": "string"
+  },
+  "created_by": {
+   "title": "Created By",
+   "type": "string"
+  },
+  "error": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Error"
+  },
+  "finished": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Finished"
+  },
+  "hypothesis_id": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Hypothesis Id"
+  },
+  "id": {
+   "title": "Id",
+   "type": "string"
+  },
+  "is_baseline": {
+   "default": false,
+   "title": "Is Baseline",
+   "type": "boolean"
+  },
+  "library_patch": {
+   "default": "",
+   "title": "Library Patch",
+   "type": "string"
+  },
+  "library_patch_sha": {
+   "default": "",
+   "title": "Library Patch Sha",
+   "type": "string"
+  },
+  "outputs": {
+   "additionalProperties": {
+    "$ref": "#/$defs/ArmResult"
+   },
+   "title": "Outputs",
+   "type": "object"
+  },
+  "profiles_sha": {
+   "default": "",
+   "title": "Profiles Sha",
+   "type": "string"
+  },
+  "report_headline": {
+   "default": "",
+   "title": "Report Headline",
+   "type": "string"
+  },
+  "run_dir": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Run Dir"
+  },
+  "seed": {
+   "default": 0,
+   "title": "Seed",
+   "type": "integer"
+  },
+  "sequences": {
+   "items": {
+    "type": "string"
+   },
+   "title": "Sequences",
+   "type": "array"
+  },
+  "started": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Started"
+  },
+  "status": {
+   "default": "queued",
+   "enum": [
+    "queued",
+    "running",
+    "done",
+    "failed"
+   ],
+   "title": "Status",
+   "type": "string"
+  },
+  "world_sha": {
+   "default": "",
+   "title": "World Sha",
+   "type": "string"
+  }
+ },
+ "required": [
+  "id",
+  "created_by"
+ ],
+ "title": "Experiment",
+ "type": "object"
+}

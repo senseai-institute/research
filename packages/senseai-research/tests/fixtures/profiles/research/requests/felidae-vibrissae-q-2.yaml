@@ -1,0 +1,33 @@
+# Generated/updated by `senseai-profiles research sync`. Edit status, leads, acceptance
+# and answer freely; `why` and `quantity.current_*` are re-derived on every sync.
+id: felidae-vibrissae-q-2
+status: queued
+target: felidae.senses.vibrissae
+target_kind: library
+kind: missing
+question: Whisker protraction during the final approach and bite. Widely described; no controlled measurement
+  verified for this entry.
+quantity:
+  unit: unknown
+why:
+  consumers: []
+  priority: medium
+  rationale: open question on sense 'vibrissae'; 0 profile field(s) read this sense
+acceptance:
+  confidence: medium
+  min_sources: 1
+  species:
+  - Felis catus
+sources_allowed:
+- peer_reviewed
+- datasheet
+- bench_measurement
+- proprietary
+leads: []
+answer: null
+created: '2026-10-14T23:17:40+00:00'
+origin: sync
+history:
+- at: '2026-10-14T23:17:40+00:00'
+  status: queued
+  note: created by sync

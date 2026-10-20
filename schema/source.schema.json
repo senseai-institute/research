@@ -1,0 +1,183 @@
+{
+ "$defs": {
+  "Vetting": {
+   "additionalProperties": true,
+   "properties": {
+    "crossref_match": {
+     "anyOf": [
+      {
+       "type": "boolean"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Crossref Match"
+    },
+    "flags": {
+     "items": {
+      "type": "string"
+     },
+     "title": "Flags",
+     "type": "array"
+    },
+    "retracted": {
+     "default": false,
+     "title": "Retracted",
+     "type": "boolean"
+    }
+   },
+   "title": "Vetting",
+   "type": "object"
+  }
+ },
+ "additionalProperties": false,
+ "properties": {
+  "authors": {
+   "default": "",
+   "title": "Authors",
+   "type": "string"
+  },
+  "checked": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Checked"
+  },
+  "created_at": {
+   "title": "Created At",
+   "type": "string"
+  },
+  "created_by": {
+   "title": "Created By",
+   "type": "string"
+  },
+  "doi": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Doi"
+  },
+  "fetched_from": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Fetched From"
+  },
+  "fetched_text_sha256": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Fetched Text Sha256"
+  },
+  "fulltext_available": {
+   "default": false,
+   "title": "Fulltext Available",
+   "type": "boolean"
+  },
+  "id": {
+   "title": "Id",
+   "type": "string"
+  },
+  "oa_status": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Oa Status"
+  },
+  "retrieved_at": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Retrieved At"
+  },
+  "title": {
+   "default": "",
+   "title": "Title",
+   "type": "string"
+  },
+  "url": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Url"
+  },
+  "venue": {
+   "default": "",
+   "title": "Venue",
+   "type": "string"
+  },
+  "vetting": {
+   "anyOf": [
+    {
+     "$ref": "#/$defs/Vetting"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null
+  },
+  "year": {
+   "anyOf": [
+    {
+     "type": "integer"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Year"
+  }
+ },
+ "required": [
+  "id",
+  "created_by"
+ ],
+ "title": "Source",
+ "type": "object"
+}

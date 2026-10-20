@@ -1,0 +1,79 @@
+{
+ "$defs": {
+  "FieldChange": {
+   "additionalProperties": false,
+   "properties": {
+    "field": {
+     "title": "Field",
+     "type": "string"
+    },
+    "new": {
+     "default": null,
+     "title": "New"
+    },
+    "old": {
+     "default": null,
+     "title": "Old"
+    }
+   },
+   "required": [
+    "field"
+   ],
+   "title": "FieldChange",
+   "type": "object"
+  }
+ },
+ "additionalProperties": false,
+ "description": "One revision of a claim, as recorded in the event log.",
+ "properties": {
+  "approval_id": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Approval Id"
+  },
+  "at": {
+   "title": "At",
+   "type": "string"
+  },
+  "by": {
+   "title": "By",
+   "type": "string"
+  },
+  "changes": {
+   "items": {
+    "$ref": "#/$defs/FieldChange"
+   },
+   "title": "Changes",
+   "type": "array"
+  },
+  "claim_id": {
+   "title": "Claim Id",
+   "type": "string"
+  },
+  "reason": {
+   "title": "Reason",
+   "type": "string"
+  },
+  "revision": {
+   "title": "Revision",
+   "type": "integer"
+  }
+ },
+ "required": [
+  "claim_id",
+  "revision",
+  "changes",
+  "reason",
+  "by",
+  "at"
+ ],
+ "title": "ClaimRevision",
+ "type": "object"
+}

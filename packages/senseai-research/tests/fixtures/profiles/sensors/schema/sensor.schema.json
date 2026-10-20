@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://senseai.institute/sensors/schema/sensor.schema.json",
+  "$comment": "SPDX-License-Identifier: Apache-2.0. Sensor capability spec: what one physical device can measure, as data. Written by hardware vendors or integrators. Contains no biology and no learned numbers.",
+  "title": "Sensor capability spec",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "kind", "version", "capabilities"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+    "kind": {
+      "type": "string",
+      "enum": ["rgb_camera", "event_camera", "thermal_camera", "microphone_array", "tactile_array", "imu", "lidar", "gas_array"]
+    },
+    "vendor": { "type": "string" },
+    "model": { "type": "string" },
+    "description": { "type": "string" },
+    "placeholder": {
+      "description": "True when the values are typical-of-class estimates rather than measurements of a specific unit. A placeholder spec must say where each number came from in `notes`.",
+      "type": "boolean"
+    },
+    "notes": { "type": "string" },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "capabilities": {
+      "description": "Keyed by capability name. Which keys apply depends on `kind`; see the table in sensors/README.md. Every value carries a unit.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "resolution_px": { "$ref": "#/$defs/pair_int" },
+        "field_of_view_deg": { "$ref": "#/$defs/pair_num" },
+        "frame_rate_hz": { "$ref": "#/$defs/quantity" },
+        "latency_ms": { "$ref": "#/$defs/quantity" },
+        "dynamic_range_db": { "$ref": "#/$defs/quantity" },
+        "usable_illuminance_lux": {
+          "description": "[min, max] illuminance at which the device gives usable output.",
+          "$ref": "#/$defs/interval"
+        },
+        "snr_curve": {
+          "description": "Signal-to-noise ratio as a function of illuminance. The core input for the capability map. Points must be sorted by x.",
+          "$ref": "#/$defs/curve"
+        },
+        "read_noise_e": { "$ref": "#/$defs/quantity" },
+        "contrast_threshold_pct": {
+          "description": "Event camera: minimum log-intensity change that fires an event.",
+          "$ref": "#/$defs/quantity"
+        },
+        "max_event_rate_meps": { "$ref": "#/$defs/quantity" },
+        "background_activity_eps": {
+          "description": "Event camera: noise events per second per pixel in a static scene, as a function of illuminance.",
+          "$ref": "#/$defs/curve"
+        },
+        "spectral_range_nm": { "$ref": "#/$defs/interval" },
+        "channels": {
+          "description": "Named channels for arrays (microphones, tactile pads). Names are the ones the robot's calibration uses.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name"],
+            "properties": {
+              "name": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+              "threshold": { "$ref": "#/$defs/quantity" },
+              "notes": { "type": "string" }
+            }
+          }
+        },
+        "sample_rate_hz": { "$ref": "#/$defs/quantity" },
+        "bandwidth_hz": { "$ref": "#/$defs/interval" },
+        "self_noise_dba": { "$ref": "#/$defs/quantity" },
+        "noise_density": { "$ref": "#/$defs/quantity" },
+        "per_pixel_maps": {
+          "description": "Optional arrays alongside the spec (relative paths, .npy). Same shape as resolution_px (H, W).",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "vignetting_gain": { "type": "string" },
+            "hot_pixel_mask": { "type": "string" },
+            "noise_sigma": { "type": "string" }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "quantity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "unit"],
+      "properties": {
+        "value": { "type": "number" },
+        "unit": { "type": "string", "minLength": 1 },
+        "conditions": { "type": "string" },
+        "source": { "type": "string" }
+      }
+    },
+    "interval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "unit"],
+      "properties": {
+        "value": { "type": "array", "prefixItems": [{ "type": "number" }, { "type": "number" }], "items": false, "minItems": 2 },
+        "unit": { "type": "string", "minLength": 1 },
+        "conditions": { "type": "string" },
+        "source": { "type": "string" }
+      }
+    },
+    "pair_int": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "unit"],
+      "properties": {
+        "value": { "type": "array", "prefixItems": [{ "type": "integer" }, { "type": "integer" }], "items": false, "minItems": 2 },
+        "unit": { "type": "string", "minLength": 1 }
+      }
+    },
+    "pair_num": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "unit"],
+      "properties": {
+        "value": { "type": "array", "prefixItems": [{ "type": "number" }, { "type": "number" }], "items": false, "minItems": 2 },
+        "unit": { "type": "string", "minLength": 1 },
+        "conditions": { "type": "string" }
+      }
+    },
+    "curve": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y", "x_unit", "y_unit"],
+      "properties": {
+        "x": { "type": "array", "minItems": 2, "items": { "type": "number" } },
+        "y": { "type": "array", "minItems": 2, "items": { "type": "number" } },
+        "x_unit": { "type": "string", "minLength": 1 },
+        "y_unit": { "type": "string", "minLength": 1 },
+        "x_scale": {
+          "description": "How to interpolate between samples along x. Use 'log' for quantities that span decades (illuminance). All x must be positive for 'log'.",
+          "type": "string",
+          "enum": ["linear", "log"],
+          "default": "linear"
+        },
+        "conditions": { "type": "string" },
+        "source": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,0 +1,97 @@
+{
+ "additionalProperties": false,
+ "description": "Verbatim text found by code in a fetched document. Never typed by a model.",
+ "properties": {
+  "char_end": {
+   "title": "Char End",
+   "type": "integer"
+  },
+  "char_start": {
+   "title": "Char Start",
+   "type": "integer"
+  },
+  "context_after": {
+   "default": "",
+   "maxLength": 600,
+   "title": "Context After",
+   "type": "string"
+  },
+  "context_before": {
+   "default": "",
+   "maxLength": 600,
+   "title": "Context Before",
+   "type": "string"
+  },
+  "created_at": {
+   "title": "Created At",
+   "type": "string"
+  },
+  "created_by": {
+   "title": "Created By",
+   "type": "string"
+  },
+  "figure": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Figure"
+  },
+  "id": {
+   "title": "Id",
+   "type": "string"
+  },
+  "page": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Page"
+  },
+  "section": {
+   "default": "",
+   "title": "Section",
+   "type": "string"
+  },
+  "source_id": {
+   "title": "Source Id",
+   "type": "string"
+  },
+  "table": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Table"
+  },
+  "text": {
+   "title": "Text",
+   "type": "string"
+  }
+ },
+ "required": [
+  "id",
+  "created_by",
+  "source_id",
+  "char_start",
+  "char_end",
+  "text"
+ ],
+ "title": "Passage",
+ "type": "object"
+}
