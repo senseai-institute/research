@@ -52,6 +52,22 @@ class CacheMiss(LookupError):
     """Offline mode and the response is not cached."""
 
 
+# Query parameters that carry credentials (NCBI and OpenAlex ``api_key``, PubPeer ``key``).
+# They are left out of the cache key, so a cached answer is found with or without a key, and
+# removed from the URL stored on disk, so keys never reach the cache or its S3 copy.
+SECRET_PARAMS = frozenset({"api_key", "key"})
+
+
+def _public(params: Mapping[str, Any] | None) -> dict[str, Any]:
+    return {k: v for k, v in (params or {}).items() if k not in SECRET_PARAMS}
+
+
+def _redact(url: httpx.URL) -> str:
+    for k in SECRET_PARAMS:
+        url = url.copy_remove_param(k)
+    return str(url)
+
+
 class RateLimiter:
     """Simple per-host minimum-interval limiter (monotonic clock)."""
 
@@ -95,7 +111,7 @@ def data_root() -> Path:
 
 def cache_key(method: str, url: str, params: Mapping[str, Any] | None, body: str | None) -> str:
     canon = json.dumps(
-        {"m": method.upper(), "u": url, "p": sorted((params or {}).items()), "b": body or ""},
+        {"m": method.upper(), "u": url, "p": sorted(_public(params).items()), "b": body or ""},
         sort_keys=True,
         separators=(",", ":"),
         default=str,
@@ -188,7 +204,7 @@ class CachedClient:
         if cached is not None and (cached.ok or not retry_errors):
             return cached
         if self.offline:
-            raise CacheMiss(f"offline and not cached: {method} {url} {dict(params or {})}")
+            raise CacheMiss(f"offline and not cached: {method} {url} {_public(params)}")
         host = httpx.URL(url).host
         last: httpx.Response | None = None
         for attempt in range(self.max_retries + 1):
@@ -210,7 +226,7 @@ class CachedClient:
             k: v for k, v in last.headers.items() if k.lower() in ("content-type", "etag", "date")
         }
         out = CachedResponse(
-            str(last.url),
+            _redact(last.url),
             last.status_code,
             last.text,
             keep,

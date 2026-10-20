@@ -2,7 +2,8 @@
 """``senseai-research``: the command line.
 
 Commands: ``import``, ``export``, ``schema``, ``backup``, ``claims``, ``impact``,
-``experiment``, ``pending``, ``approve``, ``reject``, ``ask``, ``agent-doc``, ``serve``.
+``experiment``, ``pending``, ``approve``, ``reject``, ``ask``, ``agent-doc``, ``api-doc``,
+``settings``, ``serve``.
 """
 
 from __future__ import annotations
@@ -295,6 +296,60 @@ def cmd_agent_doc(a: argparse.Namespace, cfg: Settings) -> int:
     Path(a.out).write_text(render())
     print(f"wrote {a.out}")
     return 0
+
+
+def _api_doc_args(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--out", default="docs/APIS.md")
+
+
+@command(
+    "api-doc",
+    "write docs/APIS.md (outside services and their API keys) from the code",
+    _api_doc_args,
+)
+def cmd_api_doc(a: argparse.Namespace, cfg: Settings) -> int:
+    from senseai_research.integrations import render_doc
+
+    Path(a.out).parent.mkdir(parents=True, exist_ok=True)
+    Path(a.out).write_text(render_doc())
+    print(f"wrote {a.out}")
+    return 0
+
+
+def _settings_args(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--check", action="store_true", help="also test each key against its service")
+    p.add_argument("--env", action="store_true", help="print the variables as a template")
+
+
+STATE_LABEL = {
+    "set": "set",
+    "partial": "partly set",
+    "not_set": "not set",
+    "no_key": "no key needed",
+}
+
+
+@command("settings", "list outside services and whether their keys are set", _settings_args)
+def cmd_settings(a: argparse.Namespace, cfg: Settings) -> int:
+    from senseai_research import integrations
+
+    if a.env:
+        print(integrations.env_template(), end="")
+        return 0
+    missing_required = False
+    for g in integrations.GROUPS:
+        print(g)
+        for row in integrations.status():
+            if row["group"] != g:
+                continue
+            names = ", ".join(v["name"] for v in row["vars"]) or "-"
+            line = f"  {row['name']:<34} {row['need']:<12} {STATE_LABEL[row['state']]:<14} {names}"
+            if a.check and row["checkable"]:
+                r = integrations.check(row["id"])
+                line += f"\n      {'ok' if r.ok else 'problem'}: {r.detail}"
+            print(line)
+            missing_required |= row["need"] == "required" and row["state"] != "set"
+    return 1 if missing_required else 0
 
 
 def _ask_args(p: argparse.ArgumentParser) -> None:
