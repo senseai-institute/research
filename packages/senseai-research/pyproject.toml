@@ -13,6 +13,7 @@ dependencies = [
   # senseai-profiles is private and not on PyPI: pinned to the main the spec was built against.
   "senseai-profiles[curate] @ git+https://github.com/senseai-institute/profiles@018d2d6009959d0b66a90f234ffcb4da3c0a059d#subdirectory=packages/senseai-profiles",
   "anthropic>=1.15",
+  "httpx2>=2.0",  # tests hand the SDK an httpx2 transport (recorded responses)
   "fastapi>=0.115",
   "uvicorn>=0.30",
   "sse-starlette>=2.1",

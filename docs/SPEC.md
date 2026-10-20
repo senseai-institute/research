@@ -367,3 +367,11 @@ Where they disagree, the code wins.
     `citations` and an `evidence` item (DOI, verbatim quote, section), which the library schema
     defines for exactly this. The patched entry must pass `validate_entry` before anything is
     pushed.
+13. **Recorded responses.** No API key was available while building, so the replay fixtures
+    (`tests/fixtures/recorded/*.json`) are written by hand in the API's message shape rather than
+    recorded live. They replay through the real SDK, as a Server-Sent Events stream over an
+    `httpx2` transport (anthropic 1.x uses `httpx2`). Setting `RESEARCH_RECORD_DIR` during a live
+    session saves every final message in that same shape, so live recordings can replace them.
+    The live smoke run (spec P3) has not been made: there was no key.
+14. **Strict tool schemas** use `anyOf: [T, null]` for optional fields. Strict mode supports
+    `anyOf`; JSON-Schema type arrays (`["string", "null"]`) are not in its supported list.

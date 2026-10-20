@@ -2,7 +2,7 @@
 """``senseai-research``: the command line.
 
 Commands: ``import``, ``export``, ``schema``, ``backup``, ``claims``, ``impact``,
-``experiment``, ``pending``, ``approve``, ``reject``.
+``experiment``, ``pending``, ``approve``, ``reject``, ``ask``, ``agent-doc``.
 """
 
 from __future__ import annotations
@@ -277,6 +277,106 @@ def cmd_approve(a: argparse.Namespace, cfg: Settings) -> int:
 @command("reject", "reject a pending change (records who and why)", _decide_args)
 def cmd_reject(a: argparse.Namespace, cfg: Settings) -> int:
     return _decide(a, cfg, "reject")
+
+
+def _agent_doc_args(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--out", default="docs/AGENT.md")
+
+
+@command(
+    "agent-doc",
+    "write docs/AGENT.md (tools, model call, guardrails) from the code",
+    _agent_doc_args,
+)
+def cmd_agent_doc(a: argparse.Namespace, cfg: Settings) -> int:
+    from senseai_research.agent.doc import render
+
+    Path(a.out).parent.mkdir(parents=True, exist_ok=True)
+    Path(a.out).write_text(render())
+    print(f"wrote {a.out}")
+    return 0
+
+
+def _ask_args(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--message", "-m", help="send one message and exit (otherwise interactive)")
+    p.add_argument("--conversation", help="continue this conversation id")
+    p.add_argument("--user", default=None, help="your name (default: $USER)")
+
+
+def _printer() -> Callable[[str, dict[str, object]], None]:
+    state = {"in_text": False}
+
+    def emit(kind: str, d: dict[str, object]) -> None:
+        if kind == "text_delta":
+            print(d["text"], end="", flush=True)
+            state["in_text"] = True
+            return
+        if state["in_text"]:
+            print()
+            state["in_text"] = False
+        if kind == "tool_call":
+            print(f"  [{d['label']}]", flush=True)
+        elif kind == "tool_result_summary" and not d.get("ok"):
+            print(f"  [problem: {d['summary']}]", flush=True)
+        elif kind == "job_progress":
+            print(f"  [{d.get('message', '')}]", flush=True)
+        elif kind == "pending_action":
+            act = d["action"]
+            assert isinstance(act, dict)
+            card = act["card"]
+            print(f"\n  === Waiting for you: {card.get('title')} ({act['id']}) ===")
+            for r in card.get("rows", []):
+                print(f"  {r['label']}: {r['before']} -> {r['after']}")
+            if card.get("quote"):
+                print(f"  Quote: \u201c{card['quote']}\u201d")
+            print(f"  Approve with  :approve {act['id']} <your reason>")
+            print(f"  Reject with   :reject {act['id']} <your reason>\n")
+        elif kind == "error":
+            print(f"  [note: {d.get('message')}]", flush=True)
+        elif kind == "done":
+            u = d.get("usage") or {}
+            assert isinstance(u, dict)
+            print(f"\n  (cost of this turn: ${u.get('cost_usd', 0)})")
+
+    return emit
+
+
+@command("ask", "chat with the research assistant in the terminal", _ask_args)
+def cmd_ask(a: argparse.Namespace, cfg: Settings) -> int:
+    import getpass
+
+    from senseai_research.agent import Agent
+
+    store = open_store(cfg)
+    agent = Agent(store, cfg)
+    user = f"user:{a.user or getpass.getuser()}"
+    conv = a.conversation or agent.new_conversation(user)
+    emit = _printer()
+    if a.message:
+        agent.send(conv, a.message, emit=emit, user=user)
+        print(f"\n(conversation {conv})")
+        return 0
+    print(f"Conversation {conv}. Type your question; :approve / :reject <id> <reason>; :quit.")
+    while True:
+        try:
+            line = input("\nyou> ").strip()
+        except EOFError:
+            return 0
+        if not line:
+            continue
+        if line in (":quit", ":q"):
+            return 0
+        if line.startswith((":approve ", ":reject ")):
+            cmd, _, rest = line.partition(" ")
+            action_id, _, why = rest.partition(" ")
+            try:
+                out = agent.decide(action_id, cmd[1:], user=user, rationale=why)
+            except ValueError as e:
+                print(f"  {e}")
+                continue
+            print(f"  {out.message}")
+            continue
+        agent.send(conv, line, emit=emit, user=user)
 
 
 def build_parser() -> argparse.ArgumentParser:
