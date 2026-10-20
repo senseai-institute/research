@@ -12,9 +12,8 @@ the correction does to the robot, and sign off on a library change.
 
 The full design is in [`docs/SPEC.md`](docs/SPEC.md).
 
-> **Status: phase 5 of 6.** Everything below works: the `/research` page in the viewer, and the
-> curate pipeline (`senseai-library`), which now lives here. Still to come: the one-command EC2
-> install (phase 6).
+> **Status: all six phases built.** The `/research` page in the viewer, the curate pipeline
+> (`senseai-library`), which now lives here, and the EC2 install below.
 
 ## For a researcher
 
@@ -98,6 +97,26 @@ value with its paper and verbatim quote, your reason, the impact table and the e
 results, and says who approved it and when.
 
 ## For an operator
+
+### On the EC2 box (where the viewer runs)
+
+```bash
+git clone https://github.com/senseai-institute/research ~/senseai/research-repo
+bash ~/senseai/research-repo/scripts/install_research_ec2.sh   # no model is called
+research-ctl.sh start                                          # then open /research in the viewer
+```
+
+The install reuses what the viewer's `deploy/setup_ec2.sh` set up (`~/senseai/.venv`,
+`~/senseai/profiles`, the viewer settings in `~/senseai/viewer.env` or
+`/etc/senseai-viewer.env`). It installs senseai-research into that environment, writes
+`~/senseai/research.env`, imports the library into the ledger, installs `research-ctl.sh`
+(`start | stop | restart | status | logs`), adds `RESEARCH_URL` to the viewer settings and
+restarts the viewer if it can. It is safe to run again. Put `ANTHROPIC_API_KEY` (and, for
+library PRs on GitHub, `GITHUB_TOKEN`) in `~/senseai/research.env`; `research-ctl.sh status`
+says whether the model is reachable. The research server listens on 127.0.0.1 only, so people
+reach it through the viewer, behind the viewer password.
+
+### By hand
 
 ```bash
 uv venv && uv pip install -e "packages/senseai-research[dev]"   # needs read access to profiles

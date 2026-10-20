@@ -11,7 +11,7 @@ writes a number without a DOI and a quote.
 Every HTTP and model response is cached under ``$SENSEAI_DATA/curate-cache/``
 so a draft is reproducible offline.
 
-Moved here from ``senseai_research.curate`` (spec D2, phase 5); profiles keeps a re-export
+Moved here from ``senseai_profiles.curate`` (spec D2, phase 5); profiles keeps a re-export
 shim that warns. The profiles checkout it reads and writes is ``SENSEAI_PROFILES_REPO``
 (``--root`` on the command line), no longer the directory this code sits in.
 """
