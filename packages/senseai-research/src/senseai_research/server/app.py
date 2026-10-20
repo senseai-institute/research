@@ -312,13 +312,13 @@ def create_app(
     def check_model() -> tuple[bool, str]:
         if model_check is not None:
             return model_check()
-        from senseai_research.agent.client import make_client
+        from senseai_research.agent.client import make_client, missing_credentials
 
         try:
             make_client().with_options(timeout=10.0, max_retries=0).models.retrieve(cfg.model)
             return True, "reachable"
         except Exception as e:
-            return False, f"{type(e).__name__}"
+            return False, "no API key set" if missing_credentials(e) else f"{type(e).__name__}"
 
     @app.get("/api/research/health")
     def health() -> dict[str, Any]:

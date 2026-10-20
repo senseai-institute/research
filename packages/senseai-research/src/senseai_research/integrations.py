@@ -121,13 +121,15 @@ def probe(
 
 
 def _anthropic(env: Mapping[str, str], http: httpx.Client) -> Result:
-    from senseai_research.agent.client import make_client
+    from senseai_research.agent.client import make_client, missing_credentials
     from senseai_research.config import DEFAULT_MODEL
 
     model = env.get("RESEARCH_MODEL") or DEFAULT_MODEL
     try:
         make_client().with_options(timeout=15.0, max_retries=0).models.retrieve(model)
     except Exception as e:  # any SDK error: auth, permission, network
+        if missing_credentials(e):
+            return Result(False, "no key: set ANTHROPIC_API_KEY")
         return Result(False, f"the model {model} is not reachable ({type(e).__name__})")
     return Result(True, f"working; model {model} is available")
 

@@ -50,5 +50,5 @@ response schemas are in the OpenAPI document at `/api/research/openapi.json`.
 | `tool_result_summary` | `id`, `ok`, `summary`, `refs` | Mark the chip done or failed. `refs` may hold `claim_id`, `impact_id`, `experiment_id`, `source_id`, `doi`, `section`, `text`, `context_before`, `context_after`, `pending_action_id`: open the matching panel. |
 | `pending_action` | `action`: `id`, `kind`, `status`, `card` {`title`, `summary`, `rows` [{`label`, `before`, `after`}], `quote`, `diff`, `note`}, `error` | Show an Approve / Reject card with a required rationale; post it to `/api/research/actions/{action.id}/approve` (or `/reject`). |
 | `job_progress` | `job_id`, `frac`, `message` (and the bench event fields) | Show experiment progress. |
-| `error` | `message`, optional `code` (refusal, max_tokens or unverified_number), optional `numbers` | Show `message`. `unverified_number` flags numbers in the reply that no stored record supports. |
+| `error` | `message`, optional `code` (refusal, max_tokens, unverified_number or no_api_key), optional `numbers` | Show `message`. `unverified_number` flags numbers in the reply that no stored record supports. |
 | `done` | `stop` (end_turn, pending_action, refusal, max_tokens, error or step_limit), `pending` [action ids], `usage` | The turn is over; enable the composer again. |

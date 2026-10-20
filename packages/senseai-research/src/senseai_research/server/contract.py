@@ -39,7 +39,8 @@ EVENTS: dict[str, tuple[str, str]] = {
         "Show experiment progress.",
     ),
     "error": (
-        "`message`, optional `code` (refusal, max_tokens or unverified_number), optional `numbers`",
+        "`message`, optional `code` (refusal, max_tokens, unverified_number or no_api_key), "
+        "optional `numbers`",
         "Show `message`. `unverified_number` flags numbers in the reply that no stored "
         "record supports.",
     ),
