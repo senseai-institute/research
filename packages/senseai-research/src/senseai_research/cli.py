@@ -2,7 +2,7 @@
 """``senseai-research``: the command line.
 
 Commands: ``import``, ``export``, ``schema``, ``backup``, ``claims``, ``impact``,
-``experiment``, ``pending``, ``approve``, ``reject``, ``ask``, ``agent-doc``.
+``experiment``, ``pending``, ``approve``, ``reject``, ``ask``, ``agent-doc``, ``serve``.
 """
 
 from __future__ import annotations
@@ -119,7 +119,7 @@ def cmd_backup(a: argparse.Namespace, cfg: Settings) -> int:
     out = Path(a.out) if a.out else cfg.data / "backups" / f"ledger-{seq:08d}.sqlite"
     out.parent.mkdir(parents=True, exist_ok=True)
     dst = sqlite3.connect(out)
-    with dst:
+    with dst, store._lock:
         store._conn.backup(dst)
     dst.close()
     print(f"backup: {out}")
@@ -377,6 +377,23 @@ def cmd_ask(a: argparse.Namespace, cfg: Settings) -> int:
             print(f"  {out.message}")
             continue
         agent.send(conv, line, emit=emit, user=user)
+
+
+def _serve_args(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--port", type=int, default=None, help="default: $RESEARCH_PORT or 8100")
+
+
+@command(
+    "serve", "run the research server on 127.0.0.1 (the viewer proxies /api/research)", _serve_args
+)
+def cmd_serve(a: argparse.Namespace, cfg: Settings) -> int:
+    import uvicorn
+
+    from senseai_research.server.app import create_app
+
+    port = a.port or cfg.port
+    uvicorn.run(create_app(cfg), host="127.0.0.1", port=port, log_level="info")
+    return 0
 
 
 def build_parser() -> argparse.ArgumentParser:
