@@ -43,7 +43,7 @@ from senseai_research.ledger.models import (
 from senseai_research.ledger.store import LedgerError, Store
 from senseai_research.server.sse import stream_turn
 
-LOOPBACK = ("127.0.0.1", "::1")
+LOOPBACK = ("127.0.0.1", "::1", "::ffff:127.0.0.1")  # the last: IPv4 on a dual-stack socket
 SETTINGS_WHERE = (
     "Keys are set as environment variables on the research server, never on this page. "
     "On Railway: the research service, Variables tab (Railway redeploys when you save). "

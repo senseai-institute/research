@@ -25,6 +25,29 @@ env:
   VIEWER_REF: claude/research-page
 
 jobs:
+  # The Railway image builds, holds no private code, and refuses to start without the token.
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image
+        run: docker build -t senseai-research:ci .
+      - name: It refuses to start without RESEARCH_PROXY_TOKEN
+        run: |
+          set +e
+          out=$(docker run --rm senseai-research:ci 2>&1); code=$?
+          set -e
+          echo "$out"
+          test "$code" -eq 1
+          grep -q "RESEARCH_PROXY_TOKEN" <<<"$out"
+      - name: It holds no senseai-profiles code
+        run: |
+          docker run --rm --entrypoint python senseai-research:ci -c \
+            "import importlib.util, sys; sys.exit(importlib.util.find_spec('senseai_profiles') is not None)"
+      - name: The research CLI is installed
+        run: docker run --rm --entrypoint senseai-research senseai-research:ci settings --env
+
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 20
