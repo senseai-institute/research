@@ -12,8 +12,9 @@ the correction does to the robot, and sign off on a library change.
 
 The full design is in [`docs/SPEC.md`](docs/SPEC.md).
 
-> **Status: phase 1 of 6 (the ledger).** Import, export, history and the write rules work. Impact
-> previews, experiments, the chat and the `/research` page come in later phases.
+> **Status: phase 2a of 6.** The ledger works: import, export, history and the write rules.
+> Impact previews work: what a library change does to Panther's profile, reflex and world prior.
+> Experiments, the chat and the `/research` page come in later phases.
 
 ## For a researcher
 
@@ -26,6 +27,17 @@ senseai-research claims --path felidae.senses.vision
 
 Each line shows a value's status, its place in the library, and the number with its unit.
 `unverified` means nobody has yet found the sentence in a full-text paper that gives this number.
+
+To see what a correction would do before anyone runs anything:
+
+```bash
+senseai-research impact --path felidae.senses.vision.detection_threshold --value 0
+```
+
+It lists the profile values that read this number. Each change gets one plain sentence, for
+example "the frame head trusts the camera image at half confidence down to 0.316 lux (was
+0.0575 lux)". A table follows with every changed point, and it says whether the world model reads
+the value at all. Every number comes from re-deriving the profiles in code, not from an estimate.
 
 ## For an operator
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 import importlib.util
 import os
 import socket
+import sys
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -39,9 +40,23 @@ def profiles_root() -> Path:
     return PROFILES
 
 
+SEQUENCES = ("zurich_city_03_a", "zurich_city_09_b")
+
+
 @pytest.fixture
 def settings(tmp_path: Path) -> Settings:
-    return Settings(data=tmp_path / "data", profiles_repo=PROFILES)
+    data_root = tmp_path / "dsec"
+    for name in SEQUENCES:
+        (data_root / "test" / name / "images" / "left").mkdir(parents=True)
+    return Settings(
+        data=tmp_path / "data",
+        profiles_repo=PROFILES,
+        data_root=data_root,
+        bench_cmd=f"{sys.executable} {FIXTURES / 'stub_bench.py'}",
+        bench_python=sys.executable,
+        stack_dir=tmp_path / "stack",
+        world_params=FIXTURES / "world" / "params.py",
+    )
 
 
 @pytest.fixture

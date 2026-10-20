@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """``senseai-research``: the command line.
 
-Phase 1 commands: ``import``, ``export``, ``schema``, ``backup``, ``claims``.
+Commands: ``import``, ``export``, ``schema``, ``backup``, ``claims``, ``impact``.
 """
 
 from __future__ import annotations
@@ -14,6 +14,7 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 
 from senseai_research.config import Settings
+from senseai_research.ledger.models import Impact
 from senseai_research.ledger.store import Store
 
 Command = Callable[[argparse.Namespace, Settings], int]
@@ -142,6 +143,50 @@ def cmd_claims(a: argparse.Namespace, cfg: Settings) -> int:
         if a.path and not c.library_path.startswith(a.path):
             continue
         print(f"{c.status:<11} {c.library_path} = {c.quantity.text()}")
+    return 0
+
+
+def _change_args(p: argparse.ArgumentParser) -> None:
+    p.add_argument(
+        "--path", required=True, help="library path, e.g. felidae.senses.vision.detection_threshold"
+    )
+    p.add_argument("--value", type=float, help="new value (in the library's unit)")
+    p.add_argument("--low", type=float, help="new range: low end")
+    p.add_argument("--high", type=float, help="new range: high end")
+    p.add_argument("--unit", help="unit (must be the library's; default: the library's)")
+
+
+def _quantity(a: argparse.Namespace) -> dict[str, object]:
+    if a.value is None and (a.low is None or a.high is None):
+        raise SystemExit("give --value, or --low and --high")
+    q: dict[str, object] = {"value": a.value, "low": a.low, "high": a.high}
+    if a.unit:
+        q["unit"] = a.unit
+    return q
+
+
+def print_impact(imp: Impact) -> None:
+    nq = imp.new_quantity
+    new = nq.get("value") if nq.get("value") is not None else [nq.get("low"), nq.get("high")]
+    print(f"Changing {imp.library_path}: {imp.old_quantity.get('value')} -> {new}")
+    print("Read by: " + (", ".join(imp.consumers) or "no profile field"))
+    for s in imp.sentences:
+        print(f"  - {s}")
+    if imp.field_summaries:
+        print("\n  field                              point            old       new      change")
+        for r in imp.profile_rows:
+            d = "" if r.delta_pct is None else f"{r.delta_pct:+.0f}%"
+            name = f"{r.profile}.{r.section}.{r.field}"
+            print(f"  {name:<34} {r.point:<14} {r.old!s:>9.6} {r.new!s:>9.6} {d:>8}")
+    print(f"(impact record {imp.id})")
+
+
+@command("impact", "what a library change does to the profiles and the world prior", _change_args)
+def cmd_impact(a: argparse.Namespace, cfg: Settings) -> int:
+    from senseai_research.impact import preview
+
+    imp = preview(open_store(cfg), cfg, a.path, _quantity(a), actor="user:cli")
+    print_impact(imp)
     return 0
 
 
