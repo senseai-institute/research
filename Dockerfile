@@ -16,10 +16,14 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY packages/senseai-research/pyproject.toml packages/senseai-research/scripts/deps.py /tmp/build/
+# deps.py reads ../pyproject.toml, so keep the package layout.
+COPY packages/senseai-research/pyproject.toml /tmp/build/pyproject.toml
+COPY packages/senseai-research/scripts/deps.py /tmp/build/scripts/deps.py
 # Every dependency except the private senseai-profiles (installed at start), plus boto3 for
-# S3 backups. Cached as its own layer.
-RUN pip install --no-cache-dir $(cd /tmp/build && python deps.py --without senseai-profiles --extra aws)
+# S3 backups. Cached as its own layer. The assignment fails the build if deps.py fails.
+RUN deps="$(python /tmp/build/scripts/deps.py --without senseai-profiles --extra aws)" \
+    && test -n "$deps" \
+    && pip install --no-cache-dir $deps
 
 COPY packages/senseai-research /app/packages/senseai-research
 COPY scripts/container-start.sh /app/scripts/container-start.sh
