@@ -76,6 +76,7 @@ def test_install_then_start_status_stop(box: tuple[Path, dict[str, str]]) -> Non
     assert "==> done" in r.stdout
     renv = (stack / "research.env").read_text()
     assert f"RESEARCH_PORT={env['RESEARCH_PORT']}" in renv and "SENSEAI_PROFILES_REPO=" in renv
+    assert "# ANTHROPIC_API_KEY=" in renv and "# OPENALEX_API_KEY=" in renv, "every key, commented"
     assert (
         f"RESEARCH_URL=http://127.0.0.1:{env['RESEARCH_PORT']}"
         in (stack / "viewer.env").read_text()

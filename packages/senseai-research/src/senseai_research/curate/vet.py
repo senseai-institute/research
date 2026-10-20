@@ -18,7 +18,7 @@ import os
 from dataclasses import dataclass, field
 
 from senseai_research.curate.cache import CachedClient, CacheMiss, data_root
-from senseai_research.curate.search import Paper, norm_doi
+from senseai_research.curate.search import Paper, norm_doi, openalex_params
 
 CROSSREF = "https://api.crossref.org/works/{doi}"
 PUBPEER = "https://pubpeer.com/api/v2/publications"
@@ -118,7 +118,7 @@ def venue(client: CachedClient, v: Vetting, paper: Paper, *, min_citations: int 
     try:
         r = client.get(
             OPENALEX_WORK.format(doi=v.doi),
-            params={"mailto": client.email} if client.email else None,
+            params=openalex_params(client) or None,
         )
     except CacheMiss as e:
         v.errors.append(f"openalex: {e}")

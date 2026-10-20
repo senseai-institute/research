@@ -86,13 +86,13 @@ RESEARCH_PORT=$PORT
 RESEARCH_DATA=$DATA
 SENSEAI_PROFILES_REPO=$STACK/profiles
 SENSEAI_STACK_DIR=$STACK
-# The assistant needs a Claude credential: set ANTHROPIC_API_KEY here, or run "ant auth login".
-# ANTHROPIC_API_KEY=
-# Optional: a fine-grained token with contents + pull requests on senseai-institute/profiles
-# only. Without it, approved library changes are saved as a patch and a PR text to download.
-# GITHUB_TOKEN=
+
+# Outside services and their keys. Uncomment and fill in the ones you have; docs/APIS.md says
+# what each is for, and "senseai-research settings --check" tests them. The assistant needs
+# ANTHROPIC_API_KEY.
 EOF
-    echo "    created (edit it to add ANTHROPIC_API_KEY and, optionally, GITHUB_TOKEN)"
+    "$VENV/bin/senseai-research" settings --env | sed -e 's/^\([A-Z]\)/# \1/' >>"$RENV"
+    echo "    created (edit it to add ANTHROPIC_API_KEY and the other keys; see docs/APIS.md)"
   else
     echo "    exists, left as is"
   fi

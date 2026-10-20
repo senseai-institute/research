@@ -15,12 +15,13 @@ from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import Any
 
+import httpx
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import JSONResponse, PlainTextResponse
 from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
 
-from senseai_research import __version__, views
+from senseai_research import __version__, integrations, views
 from senseai_research.actions import ActionError
 from senseai_research.agent import Agent
 from senseai_research.config import Settings
@@ -40,6 +41,11 @@ from senseai_research.ledger.store import LedgerError, Store
 from senseai_research.server.sse import stream_turn
 
 LOOPBACK = ("127.0.0.1", "::1")
+SETTINGS_WHERE = (
+    "Keys are set as environment variables on the research server, never on this page. "
+    "On Railway: the research service, Variables tab (Railway redeploys when you save). "
+    "On the EC2 box: ~/senseai/research.env, then research-ctl.sh restart."
+)
 
 
 class MessageBody(BaseModel):
@@ -58,6 +64,7 @@ def create_app(
     agent: Agent | None = None,
     trusted_hosts: Iterable[str] = LOOPBACK,
     model_check: Callable[[], tuple[bool, str]] | None = None,
+    check_http: httpx.Client | None = None,
 ) -> FastAPI:
     cfg = cfg or Settings.from_env()
     store = store or Store(cfg.db_path)
@@ -292,6 +299,26 @@ def create_app(
             "profiles_sha": git_sha(cfg.profiles_repo) if cfg.profiles_repo else None,
             "github": bool(cfg.github_token),
         }
+
+    # -- settings: outside services and whether their keys are set (values are never sent) --
+
+    checks = integrations.CheckCache()
+
+    @app.get("/api/research/settings")
+    def settings_page() -> dict[str, Any]:
+        return {
+            "groups": list(integrations.GROUPS),
+            "integrations": integrations.status(),
+            "where": SETTINGS_WHERE,
+        }
+
+    @app.post("/api/research/settings/{iid}/check")
+    def check_integration(iid: str, x_senseai_user: str | None = Header(None)) -> dict[str, Any]:
+        person(x_senseai_user)
+        if iid not in integrations.BY_ID:
+            raise HTTPException(404, f"there is no service {iid!r}")
+        r, cached = checks.run(iid, http=check_http)
+        return {"id": iid, "ok": r.ok, "detail": r.detail, "cached": cached}
 
     app.state.store = store
     app.state.agent = agent

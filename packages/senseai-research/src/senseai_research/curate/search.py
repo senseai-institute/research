@@ -101,6 +101,16 @@ def _abstract_from_inverted(idx: dict[str, list[int]] | None) -> str | None:
     return " ".join(pos[i] for i in sorted(pos)) or None
 
 
+def openalex_params(client: CachedClient) -> dict[str, Any]:
+    """The contact email (OpenAlex's faster queue) and ``OPENALEX_API_KEY``, when set."""
+    params: dict[str, Any] = {}
+    if client.email:
+        params["mailto"] = client.email
+    if key := os.environ.get("OPENALEX_API_KEY"):
+        params["api_key"] = key
+    return params
+
+
 def openalex_search(client: CachedClient, text: str, *, per_page: int = 25) -> list[Paper]:
     params: dict[str, Any] = {
         "search": text,
@@ -109,9 +119,7 @@ def openalex_search(client: CachedClient, text: str, *, per_page: int = 25) -> l
             "id,doi,title,publication_year,type,cited_by_count,abstract_inverted_index,"
             "primary_location,open_access,ids,referenced_works"
         ),
-    }
-    if client.email:
-        params["mailto"] = client.email
+    } | openalex_params(client)
     d = client.get_json(OPENALEX, params=params)
     out: list[Paper] = []
     for w in d.get("results", []):
@@ -326,5 +334,6 @@ __all__ = [
     "SearchResult",
     "build_queries",
     "norm_doi",
+    "openalex_params",
     "search",
 ]

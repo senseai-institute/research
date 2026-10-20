@@ -116,6 +116,18 @@ library PRs on GitHub, `GITHUB_TOKEN`) in `~/senseai/research.env`; `research-ct
 says whether the model is reachable. The research server listens on 127.0.0.1 only, so people
 reach it through the viewer, behind the viewer password.
 
+### API keys
+
+[`docs/APIS.md`](docs/APIS.md) lists every outside service: what it is for, whether it needs
+a key, the variable name, what happens without it, and where to get one. Set keys as
+environment variables on the research server: in Railway, the service's *Variables* tab (the
+end of `docs/APIS.md` has a block to paste into *Raw Editor*); on the EC2 box,
+`~/senseai/research.env`. Only `ANTHROPIC_API_KEY` is required.
+
+The *Settings* tab on the Research page shows which keys are set and has a *Test* button for
+each; `senseai-research settings --check` does the same from a shell. Neither ever shows a
+key's value, and keys are kept out of the download cache and its S3 copy.
+
 ### By hand
 
 ```bash
