@@ -14,8 +14,9 @@ from senseai_research.agent.doc import render
 from senseai_research.agent.numbers import unsupported_numbers
 from senseai_research.agent.tools import TOOLS, api_tools
 from senseai_research.config import Settings
+from senseai_research.ledger.models import Approval, Claim, PendingAction
 from senseai_research.ledger.store import Store
-from tests.conftest import HAVE_PROFILES, PROFILES, store_kang_text
+from tests.conftest import HAVE_PROFILES, KANG_SOURCE, OPTICS_QUOTE, PROFILES, store_kang_text
 from tests.recorded import RecordedTransport, factory
 
 CLAIM = "lib:felidae.senses.vision.detection_threshold"
@@ -70,6 +71,72 @@ def run(store: Store, settings: Settings) -> Iterator[Any]:
     set_client_factory(None)
     for t in made:
         assert t.problems == [], t.problems
+
+
+REVISION = {
+    "claim_id": CLAIM,
+    "changes": {
+        "value": -0.08,
+        "low": None,
+        "high": None,
+        "unit": "log10 re human",
+        "conditions": None,
+        "species": None,
+        "method": None,
+        "mapping": "close",
+        "status": "extracted",
+        "source_id": KANG_SOURCE,
+        "quote": OPTICS_QUOTE,
+    },
+    "reason": "Optics-removed value for a camera.",
+}
+
+
+@pytest.mark.profiles
+def test_n1_write_tool_ends_the_turn_and_changes_nothing(run: Any) -> None:
+    r = run(
+        [msg([text("I'll propose it."), tool(1, "propose_claim_revision", REVISION)], "tool_use")]
+    )
+    res = r.say("Use the optics-removed value.")
+    assert res.stop == "pending_action" and len(r.transport.requests) == 1
+    (card,) = r.of("pending_action")
+    assert card["action"]["status"] == "pending"
+    assert r.store.must("claim", CLAIM, Claim).revision == 0
+    assert r.store.events(type_prefix="claim.revised") == []
+
+
+@pytest.mark.profiles
+def test_n1_a_yes_in_the_chat_is_not_an_approval(run: Any) -> None:
+    r = run(
+        [
+            msg([tool(1, "propose_claim_revision", REVISION)], "tool_use"),
+            msg(
+                [text("Please use the Approve button on the card; I cannot approve it.")],
+                "end_turn",
+            ),
+        ]
+    )
+    r.say("Use the optics-removed value.")
+    r.say("Yes, approve it.")
+    (a,) = r.store.all("action", PendingAction)
+    assert a.status == "pending" and r.store.all("approval", Approval) == []
+    assert r.store.must("claim", CLAIM, Claim).revision == 0
+
+
+@pytest.mark.profiles
+def test_n2_invented_quote_comes_back_as_a_tool_error(run: Any) -> None:
+    bad = json.loads(json.dumps(REVISION))
+    bad["changes"]["quote"] = "The cat's threshold was -0.08 log units re human, as everyone knows."
+    r = run(
+        [
+            msg([tool(1, "propose_claim_revision", bad)], "tool_use"),
+            msg([text("I could not find that sentence in the paper.")], "end_turn"),
+        ]
+    )
+    res = r.say("Use the optics-removed value.")
+    assert res.stop == "end_turn" and r.store.all("action", PendingAction) == []
+    tr = r.transport.requests[1]["messages"][-1]["content"][0]
+    assert tr["is_error"] is True and "not in the fetched text" in tr["content"]
 
 
 def test_n5_invented_performance_number_is_flagged(run: Any) -> None:
@@ -161,9 +228,15 @@ def test_tools_are_strict_sorted_and_complete() -> None:
     tools = api_tools()
     assert [t["name"] for t in tools] == sorted(t.name for t in TOOLS)
     assert {t.name for t in TOOLS} == {
-        "ledger_search", "claim_get", "source_passage", "literature_search", "experiment_get",
+        "ledger_search", "claim_get", "source_passage", "literature_search", "fetch_fulltext",
+        "extract_from_source", "impact_preview", "experiment_run", "experiment_get",
+        "propose_claim_revision", "propose_new_claim", "propose_hypothesis",
+        "propose_library_change",
     }  # fmt: skip
-    assert {t.kind for t in TOOLS} == {"read"}
+    kinds = {t.name: t.kind for t in TOOLS}
+    assert {n for n, k in kinds.items() if k == "write"} == {
+        n for n in kinds if n.startswith("propose_")
+    }
 
     def check(schema: dict[str, Any]) -> None:
         if schema.get("type") == "object":

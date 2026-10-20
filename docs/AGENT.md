@@ -25,6 +25,14 @@ Generated from the code by `senseai-research agent-doc`. Do not edit by hand.
 | `ledger_search` | read | Search the evidence ledger: claims (library values with status and history), sources and hypotheses. Words must all appear. Filter by library path prefix and claim status. |
 | `literature_search` | read | Search the literature (OpenAlex, Europe PMC, PubMed, Semantic Scholar) through the cached curate client. Returns DOIs, titles, years and whether they are open access. |
 | `source_passage` | read | Find a quote in a fetched document and return it with the text around it, or read the text around a character offset. Errors if the quote is not there word for word. |
+| `experiment_run` | compute | Run bench replay-compare on night recordings with the changed library, against the cached unchanged baseline. Takes minutes; progress is shown to the person. Give either claim_ids (use their current values) or a library_path with a new value. |
+| `extract_from_source` | compute | Run the curate extraction on one fetched source for one library path. Values whose quote is verified in the text become 'extracted' claims (provenance: pipeline). |
+| `fetch_fulltext` | compute | Fetch a paper's open-access full text (never paywalled content) and store it in the ledger as a source. Says when only the abstract is available. |
+| `impact_preview` | compute | Work out, in code, what a new library value does: which profile fields read it, every re-derived profile value that changes, the reflex threshold per arm, and whether the world prior reads it. Stores the result; quote it, do not estimate. |
+| `propose_claim_revision` | write-pending | Propose a change to a claim: value, conditions, species, method, mapping, or status (disputed or extracted only). A new value needs the source and the verbatim quote that states it. Creates an Approve/Reject card; nothing changes until the person approves. |
+| `propose_hypothesis` | write-pending | Propose a hypothesis with its prediction stated before any experiment is run. Creates an Approve/Reject card. |
+| `propose_library_change` | write-pending | Propose changing the library to the given claims' values (they need verified quotes). On approval this becomes a pull request on profiles. Creates an Approve/Reject card. |
+| `propose_new_claim` | write-pending | Propose a new claim from a fetched source. The quote must be in the fetched text and must state the value. Creates an Approve/Reject card. |
 
 Kinds:
 
