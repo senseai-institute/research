@@ -256,7 +256,7 @@ class Proposal(Record):
 
 
 class Approval(Record):
-    target_kind: Literal["claim_revision", "new_claim", "hypothesis", "proposal"]
+    target_kind: Literal["claim_revision", "new_claim", "hypothesis", "proposal", "handoff"]
     target_id: str  # the pending action id
     decision: Literal["approve", "reject"]
     by: str
@@ -351,7 +351,7 @@ class Impact(Record):
     sentences: list[str] = Field(default_factory=list)
 
 
-ActionKind = Literal["claim_revision", "new_claim", "hypothesis", "proposal"]
+ActionKind = Literal["claim_revision", "new_claim", "hypothesis", "proposal", "handoff"]
 ActionStatus = Literal["pending", "approved", "rejected", "failed"]
 
 
@@ -367,6 +367,21 @@ class PendingAction(Record):
     approval_id: str | None = None
     result: dict[str, Any] = Field(default_factory=dict)
     error: str | None = None
+
+
+class HandoffRelease(Record):
+    """A handoff package a person released to circuits (docs/HANDOFF.md). Never changed."""
+
+    clade: str
+    digest: str
+    action_id: str
+    approval_id: str
+    by: str
+    rationale: str
+    file: str  # under RESEARCH_DATA/outbox/handoff
+    circuits: dict[str, Any]  # the knob values, for listing without reading the file
+    pr_url: str | None = None
+    pr_error: str | None = None  # why the PR could not be opened (the file is still released)
 
 
 class Event(BaseModel):
@@ -394,6 +409,7 @@ __all__ = [
     "Experiment",
     "FieldChange",
     "FieldSummary",
+    "HandoffRelease",
     "Hypothesis",
     "Impact",
     "MappingKind",

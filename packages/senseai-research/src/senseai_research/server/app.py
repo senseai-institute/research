@@ -11,12 +11,13 @@ forwarded user. ``/healthz`` is open (it says only "ok") for the platform's heal
 
 from __future__ import annotations
 
+import json
 import secrets
 import threading
 import time
 from collections.abc import Callable, Iterable
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import httpx
 from fastapi import FastAPI, Header, HTTPException, Request
@@ -24,14 +25,16 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
 
-from senseai_research import __version__, integrations, views
-from senseai_research.actions import ActionError
+from senseai_research import __version__, handoff, integrations, views
+from senseai_research.actions import ActionError, propose_handoff
 from senseai_research.agent import Agent
 from senseai_research.config import Settings
 from senseai_research.experiments.jobs import ExperimentQueue
 from senseai_research.experiments.record import compare
+from senseai_research.handoff import deliver
 from senseai_research.impact import git_sha
 from senseai_research.ledger.models import (
+    Claim,
     Experiment,
     Hypothesis,
     Impact,
@@ -58,6 +61,10 @@ class MessageBody(BaseModel):
 
 class DecisionBody(BaseModel):
     rationale: str = Field(min_length=1, max_length=5000)
+
+
+class HandoffBody(BaseModel):
+    min_readiness: Literal["ready", "provisional"] = "provisional"
 
 
 def create_app(
@@ -237,6 +244,7 @@ def create_app(
             _source_view(s) for sid in c["source_ids"] if (s := store.get("source", sid, Source))
         ]
         card["passage"] = _passage_view(store, c["passage_id"]) if c.get("passage_id") else None
+        card["quality"] = handoff.claim_quality(store, cfg, store.must("claim", c["id"], Claim))
         return card
 
     @app.get("/api/research/passages/{passage_id}")
@@ -306,6 +314,75 @@ def create_app(
             Path(f).read_text(),
             headers={"Content-Disposition": f'attachment; filename="{name}"'},
         )
+
+    # -- handoff to circuits (docs/HANDOFF.md) -------------------------------------------
+
+    @app.get("/api/research/schema/handoff")
+    def handoff_schema() -> dict[str, Any]:
+        """JSON Schema of the package research hands to circuits."""
+        return handoff.schema()
+
+    @app.get("/api/research/handoff")
+    def handoff_index() -> list[dict[str, Any]]:
+        """Per clade: how many circuit knobs the evidence sets, the gaps, the last release."""
+        out = []
+        for clade in handoff.clades(store):
+            h = handoff.build(store, cfg, clade)
+            rel = deliver.latest(store, clade)
+            out.append(
+                {
+                    "clade": clade,
+                    "circuits": h.circuits,
+                    "summary": h.summary,
+                    "ready": [
+                        k.knob for k in h.knobs if k.estimate and k.estimate.readiness == "ready"
+                    ],
+                    "gaps": len(h.gaps),
+                    "digest": h.digest,
+                    "released": rel.model_dump() if rel else None,
+                }
+            )
+        return out
+
+    @app.get("/api/research/handoff/{clade}")
+    def handoff_draft(clade: str, min_readiness: str = "provisional") -> dict[str, Any]:
+        """The package as the evidence stands now (a draft until a person releases it)."""
+        try:
+            policy = handoff.Policy.model_validate({"min_readiness": min_readiness})
+            h = handoff.build(store, cfg, clade, policy=policy)
+        except handoff.HandoffError as e:
+            raise HTTPException(404, str(e)) from e
+        except ValueError as e:
+            raise HTTPException(400, str(e)) from e
+        return h.model_dump(mode="json")
+
+    @app.get("/api/research/handoff/{clade}/released")
+    def handoff_released(clade: str) -> JSONResponse:
+        """The last package a person released for this clade: what circuits reads."""
+        rel = deliver.latest(store, clade)
+        if rel is None:
+            raise HTTPException(404, f"no {clade} package has been released yet")
+        f = cfg.data / rel.file
+        if not f.is_file():
+            raise HTTPException(410, f"the released file {rel.file} is missing from the volume")
+        return JSONResponse(
+            json.loads(f.read_text()),
+            headers={"Content-Disposition": f'attachment; filename="{clade}.handoff.json"'},
+        )
+
+    @app.post("/api/research/handoff/{clade}/propose")
+    def handoff_propose(
+        clade: str, body: HandoffBody, x_senseai_user: str | None = Header(None)
+    ) -> dict[str, Any]:
+        """Ask for the package to be released; approve it at /api/research/actions/{id}."""
+        user = person(x_senseai_user)
+        try:
+            a = propose_handoff(
+                store, cfg, clade=clade, min_readiness=body.min_readiness, actor=user
+            )
+        except ActionError as e:
+            raise HTTPException(400, str(e)) from e
+        return a.model_dump()
 
     # -- health --------------------------------------------------------------------------
 

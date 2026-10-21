@@ -1,0 +1,637 @@
+{
+ "$defs": {
+  "ClaimQuality": {
+   "additionalProperties": false,
+   "properties": {
+    "claim_id": {
+     "title": "Claim Id",
+     "type": "string"
+    },
+    "factors": {
+     "items": {
+      "$ref": "#/$defs/Factor"
+     },
+     "title": "Factors",
+     "type": "array"
+    },
+    "gate": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Gate"
+    },
+    "label": {
+     "anyOf": [
+      {
+       "enum": [
+        "high",
+        "medium",
+        "low"
+       ],
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "title": "Label"
+    },
+    "score": {
+     "title": "Score",
+     "type": "number"
+    }
+   },
+   "required": [
+    "claim_id",
+    "score",
+    "label",
+    "factors"
+   ],
+   "title": "ClaimQuality",
+   "type": "object"
+  },
+  "Estimate": {
+   "additionalProperties": false,
+   "properties": {
+    "agreement": {
+     "enum": [
+      "agree",
+      "disagree",
+      "single",
+      "none"
+     ],
+     "title": "Agreement",
+     "type": "string"
+    },
+    "evidence": {
+     "items": {
+      "$ref": "#/$defs/Evidence"
+     },
+     "title": "Evidence",
+     "type": "array"
+    },
+    "high": {
+     "anyOf": [
+      {
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "title": "High"
+    },
+    "in_range": {
+     "title": "In Range",
+     "type": "boolean"
+    },
+    "independent_sources": {
+     "title": "Independent Sources",
+     "type": "integer"
+    },
+    "knob": {
+     "title": "Knob",
+     "type": "string"
+    },
+    "low": {
+     "anyOf": [
+      {
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "title": "Low"
+    },
+    "readiness": {
+     "enum": [
+      "ready",
+      "provisional",
+      "insufficient"
+     ],
+     "title": "Readiness",
+     "type": "string"
+    },
+    "sentences": {
+     "items": {
+      "type": "string"
+     },
+     "title": "Sentences",
+     "type": "array"
+    },
+    "strength": {
+     "title": "Strength",
+     "type": "number"
+    },
+    "unit": {
+     "title": "Unit",
+     "type": "string"
+    },
+    "value": {
+     "anyOf": [
+      {
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "title": "Value"
+    }
+   },
+   "required": [
+    "knob",
+    "unit",
+    "value",
+    "low",
+    "high",
+    "readiness",
+    "strength",
+    "agreement",
+    "independent_sources",
+    "in_range",
+    "sentences",
+    "evidence"
+   ],
+   "title": "Estimate",
+   "type": "object"
+  },
+  "Evidence": {
+   "additionalProperties": false,
+   "description": "One claim as used for one knob.",
+   "properties": {
+    "as_stated": {
+     "title": "As Stated",
+     "type": "string"
+    },
+    "claim_id": {
+     "title": "Claim Id",
+     "type": "string"
+    },
+    "excluded": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Excluded"
+    },
+    "knob_high": {
+     "anyOf": [
+      {
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Knob High"
+    },
+    "knob_low": {
+     "anyOf": [
+      {
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Knob Low"
+    },
+    "knob_value": {
+     "anyOf": [
+      {
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "title": "Knob Value"
+    },
+    "library_path": {
+     "title": "Library Path",
+     "type": "string"
+    },
+    "method": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "title": "Method"
+    },
+    "quality": {
+     "$ref": "#/$defs/ClaimQuality"
+    },
+    "source_ids": {
+     "items": {
+      "type": "string"
+     },
+     "title": "Source Ids",
+     "type": "array"
+    },
+    "species": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "title": "Species"
+    },
+    "status": {
+     "title": "Status",
+     "type": "string"
+    }
+   },
+   "required": [
+    "claim_id",
+    "library_path",
+    "as_stated",
+    "knob_value",
+    "status",
+    "species",
+    "method",
+    "source_ids",
+    "quality"
+   ],
+   "title": "Evidence",
+   "type": "object"
+  },
+  "Factor": {
+   "additionalProperties": false,
+   "properties": {
+    "multiplier": {
+     "title": "Multiplier",
+     "type": "number"
+    },
+    "name": {
+     "title": "Name",
+     "type": "string"
+    },
+    "sentence": {
+     "title": "Sentence",
+     "type": "string"
+    }
+   },
+   "required": [
+    "name",
+    "multiplier",
+    "sentence"
+   ],
+   "title": "Factor",
+   "type": "object"
+  },
+  "Gap": {
+   "additionalProperties": false,
+   "properties": {
+    "ask": {
+     "title": "Ask",
+     "type": "string"
+    },
+    "kind": {
+     "enum": [
+      "no_evidence",
+      "no_literature",
+      "out_of_range",
+      "below_policy",
+      "disagree"
+     ],
+     "title": "Kind",
+     "type": "string"
+    },
+    "knob": {
+     "title": "Knob",
+     "type": "string"
+    },
+    "sentence": {
+     "title": "Sentence",
+     "type": "string"
+    }
+   },
+   "required": [
+    "knob",
+    "kind",
+    "sentence",
+    "ask"
+   ],
+   "title": "Gap",
+   "type": "object"
+  },
+  "KnobEntry": {
+   "additionalProperties": false,
+   "properties": {
+    "default": {
+     "anyOf": [
+      {
+       "type": "number"
+      },
+      {
+       "type": "integer"
+      },
+      {
+       "type": "boolean"
+      }
+     ],
+     "title": "Default"
+    },
+    "estimate": {
+     "anyOf": [
+      {
+       "$ref": "#/$defs/Estimate"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "kind": {
+     "title": "Kind",
+     "type": "string"
+    },
+    "knob": {
+     "title": "Knob",
+     "type": "string"
+    },
+    "passed": {
+     "title": "Passed",
+     "type": "boolean"
+    },
+    "range": {
+     "maxItems": 2,
+     "minItems": 2,
+     "prefixItems": [
+      {
+       "type": "number"
+      },
+      {
+       "type": "number"
+      }
+     ],
+     "title": "Range",
+     "type": "array"
+    },
+    "rule": {
+     "anyOf": [
+      {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "title": "Rule"
+    },
+    "sentence": {
+     "title": "Sentence",
+     "type": "string"
+    },
+    "unit": {
+     "title": "Unit",
+     "type": "string"
+    }
+   },
+   "required": [
+    "knob",
+    "kind",
+    "unit",
+    "default",
+    "range",
+    "rule",
+    "estimate",
+    "passed",
+    "sentence"
+   ],
+   "title": "KnobEntry",
+   "type": "object"
+  },
+  "Policy": {
+   "additionalProperties": false,
+   "properties": {
+    "min_readiness": {
+     "default": "provisional",
+     "enum": [
+      "ready",
+      "provisional"
+     ],
+     "title": "Min Readiness",
+     "type": "string"
+    }
+   },
+   "title": "Policy",
+   "type": "object"
+  },
+  "Provenance": {
+   "additionalProperties": false,
+   "properties": {
+    "circuits_registry_sha": {
+     "title": "Circuits Registry Sha",
+     "type": "string"
+    },
+    "profiles_sha": {
+     "title": "Profiles Sha",
+     "type": "string"
+    },
+    "quality_version": {
+     "title": "Quality Version",
+     "type": "integer"
+    },
+    "research_sha": {
+     "title": "Research Sha",
+     "type": "string"
+    },
+    "research_version": {
+     "title": "Research Version",
+     "type": "string"
+    }
+   },
+   "required": [
+    "research_version",
+    "research_sha",
+    "profiles_sha",
+    "circuits_registry_sha",
+    "quality_version"
+   ],
+   "title": "Provenance",
+   "type": "object"
+  },
+  "SourceRef": {
+   "additionalProperties": false,
+   "properties": {
+    "authors": {
+     "title": "Authors",
+     "type": "string"
+    },
+    "doi": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "title": "Doi"
+    },
+    "title": {
+     "title": "Title",
+     "type": "string"
+    },
+    "url": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "title": "Url"
+    },
+    "venue": {
+     "title": "Venue",
+     "type": "string"
+    },
+    "year": {
+     "anyOf": [
+      {
+       "type": "integer"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "title": "Year"
+    }
+   },
+   "required": [
+    "doi",
+    "url",
+    "title",
+    "authors",
+    "year",
+    "venue"
+   ],
+   "title": "SourceRef",
+   "type": "object"
+  }
+ },
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "properties": {
+  "circuits": {
+   "additionalProperties": {
+    "anyOf": [
+     {
+      "type": "number"
+     },
+     {
+      "type": "integer"
+     },
+     {
+      "type": "boolean"
+     }
+    ]
+   },
+   "title": "Circuits",
+   "type": "object"
+  },
+  "clade": {
+   "title": "Clade",
+   "type": "string"
+  },
+  "digest": {
+   "default": "",
+   "title": "Digest",
+   "type": "string"
+  },
+  "engineering_knobs": {
+   "description": "physics knobs: set by the circuit design, not by the literature",
+   "items": {
+    "type": "string"
+   },
+   "title": "Engineering Knobs",
+   "type": "array"
+  },
+  "format": {
+   "default": "senseai-research/handoff@1",
+   "title": "Format",
+   "type": "string"
+  },
+  "gaps": {
+   "items": {
+    "$ref": "#/$defs/Gap"
+   },
+   "title": "Gaps",
+   "type": "array"
+  },
+  "knobs": {
+   "items": {
+    "$ref": "#/$defs/KnobEntry"
+   },
+   "title": "Knobs",
+   "type": "array"
+  },
+  "policy": {
+   "$ref": "#/$defs/Policy"
+  },
+  "provenance": {
+   "$ref": "#/$defs/Provenance"
+  },
+  "representative_species": {
+   "items": {
+    "type": "string"
+   },
+   "title": "Representative Species",
+   "type": "array"
+  },
+  "sources": {
+   "additionalProperties": {
+    "$ref": "#/$defs/SourceRef"
+   },
+   "title": "Sources",
+   "type": "object"
+  },
+  "summary": {
+   "items": {
+    "type": "string"
+   },
+   "title": "Summary",
+   "type": "array"
+  }
+ },
+ "required": [
+  "clade",
+  "representative_species",
+  "policy",
+  "circuits",
+  "summary",
+  "knobs",
+  "gaps",
+  "engineering_knobs",
+  "sources",
+  "provenance"
+ ],
+ "title": "senseai-research handoff package (to senseai-circuits)",
+ "type": "object"
+}

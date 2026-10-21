@@ -326,6 +326,51 @@ def propose_library_change(
     )
 
 
+def propose_handoff(
+    store: Store,
+    cfg: Settings,
+    *,
+    clade: str,
+    min_readiness: str = "provisional",
+    actor: str,
+    conversation_id: str | None = None,
+    tool_use_id: str | None = None,
+) -> PendingAction:
+    """Ask a person to release the clade's handoff package to circuits (docs/HANDOFF.md)."""
+    from senseai_research.handoff import HandoffError, Policy, build
+
+    try:
+        h = build(store, cfg, clade, policy=Policy.model_validate({"min_readiness": min_readiness}))
+    except (HandoffError, ValueError) as e:
+        raise ActionError(str(e)) from e
+    rows = [
+        {"label": k.knob, "before": f"{k.default} (default)", "after": str(h.circuits[k.knob])}
+        for k in h.knobs
+        if k.knob in h.circuits
+    ]
+    return _store_action(
+        store,
+        PendingAction(
+            id=new_id("act"),
+            created_by=actor,
+            kind="handoff",
+            conversation_id=conversation_id,
+            tool_use_id=tool_use_id,
+            input={"clade": h.clade, "min_readiness": min_readiness, "digest": h.digest},
+            card={
+                "title": f"Release the {h.clade} evidence to circuits",
+                "summary": " ".join(h.summary),
+                "rows": rows,
+                "note": (
+                    "Approving writes the package for circuits"
+                    + (" and opens a pull request on circuits" if cfg.circuits_repo else "")
+                    + ". Nothing else changes; circuits builds the model from it."
+                ),
+            },
+        ),
+    )
+
+
 # --- approval ----------------------------------------------------------------------------
 
 
@@ -491,6 +536,29 @@ def _apply(
             "instead of opening a PR."
         )
         return {"proposal_id": prop.id, "pr_url": prop.pr_url}, where
+    if a.kind == "handoff":
+        from senseai_research.handoff import Policy, build
+        from senseai_research.handoff.deliver import release
+
+        pkg = build(
+            store,
+            cfg,
+            a.input["clade"],
+            policy=Policy.model_validate({"min_readiness": a.input["min_readiness"]}),
+        )
+        if pkg.digest != a.input["digest"]:
+            raise ActionError(
+                "the evidence changed since this release was proposed; propose it again so "
+                "you approve what will be sent"
+            )
+        rel = release(store, cfg, a, ap, pkg)
+        where = f"Pull request: {rel.pr_url}" if rel.pr_url else f"Saved as {rel.file}."
+        if rel.pr_error:
+            where += f" The pull request on circuits could not be opened: {rel.pr_error}"
+        return (
+            {"handoff_id": rel.id, "digest": rel.digest, "pr_url": rel.pr_url},
+            f"The {pkg.clade} package ({len(pkg.circuits)} knob values) was released. {where}",
+        )
     raise ActionError(f"unknown action kind {a.kind!r}")
 
 

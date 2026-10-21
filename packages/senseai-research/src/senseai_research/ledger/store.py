@@ -115,6 +115,7 @@ _CREATE_EVENTS: Mapping[str, tuple[str, str]] = {
     "action.pending": ("action", "action"),
     "action.resolved": ("action", "action"),
     "conversation.created": ("conversation", "conversation"),
+    "handoff.released": ("handoff", "handoff"),
 }
 
 

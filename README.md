@@ -122,6 +122,14 @@ Studio is the front end; this service is the backend. [`docs/DEPLOY.md`](docs/DE
 up both: the Docker image, the `/data` volume, `RESEARCH_PROXY_TOKEN` shared with Studio, and
 `RESEARCH_URL` on Studio. [`docs/API.md`](docs/API.md) is the contract Studio codes against.
 
+### Handing evidence to circuits
+
+Research's work ends at circuits. `senseai-research handoff felidae` scores every claim (a
+0–1 score with the reason for each deduction), pools the claims behind each circuit knob into
+a value, an interval and a readiness (`ready`, `provisional`, `insufficient`), and lists what
+is missing and what to measure. A person releases the package; circuits reads its `circuits`
+section with `CircuitParams.from_bundle_meta`. See [`docs/HANDOFF.md`](docs/HANDOFF.md).
+
 ### API keys
 
 [`docs/APIS.md`](docs/APIS.md) lists every outside service: what it is for, whether it needs

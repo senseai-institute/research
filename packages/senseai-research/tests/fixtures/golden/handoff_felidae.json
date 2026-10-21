@@ -1,0 +1,481 @@
+{
+ "circuits": {
+  "ts.sigma_bearing_deg": 5.0
+ },
+ "clade": "felidae",
+ "digest": "-",
+ "engineering_knobs": [
+  "cs.gain_center",
+  "cs.gain_surround",
+  "emd.conf_floor",
+  "emd.spacing_px",
+  "lgmd.ego_cancel",
+  "lgmd.inhib_delay_ticks",
+  "ts.match_gate",
+  "ts.min_flow_matches",
+  "ts.w_what",
+  "x.absence_weight",
+  "x.norm_alpha"
+ ],
+ "format": "senseai-research/handoff@1",
+ "gaps": [
+  {
+   "ask": "Add a claim at felidae.senses.vision.light_adaptation_tau: the time constant of retinal light adaptation (gain change after a step), in ms.",
+   "kind": "no_evidence",
+   "knob": "cs.adapt_tau_ms",
+   "sentence": "No usable claim at senses.vision.light_adaptation_tau yet."
+  },
+  {
+   "ask": "Add a claim at felidae.senses.vision.rgc_center_radius: the receptive-field centre radius of retinal ganglion cells near the area centralis, in degrees, from a difference-of-Gaussians fit.",
+   "kind": "no_evidence",
+   "knob": "cs.sigma_center_deg",
+   "sentence": "No usable claim at senses.vision.rgc_center_radius yet."
+  },
+  {
+   "ask": "Add a claim at felidae.senses.vision.rgc_surround_ratio: the ratio of surround to centre radius of retinal ganglion cell receptive fields.",
+   "kind": "no_evidence",
+   "knob": "cs.surround_ratio",
+   "sentence": "No usable claim at senses.vision.rgc_surround_ratio yet."
+  },
+  {
+   "ask": "Add a claim at felidae.senses.vision.motion_tf_optimum: the temporal-frequency optimum of direction-selective motion responses, in Hz (the stimulus-independent peak of a Reichardt-type detector).",
+   "kind": "no_evidence",
+   "knob": "emd.delay_tau_ms",
+   "sentence": "No usable claim at senses.vision.motion_tf_optimum yet."
+  },
+  {
+   "ask": "Fit it in an experiment (senseai-bench) and record the result.",
+   "kind": "no_literature",
+   "knob": "lgmd.ffi_threshold",
+   "sentence": "lgmd.ffi_threshold is not a published quantity: a model threshold; set it from experiments, not from a paper."
+  },
+  {
+   "ask": "Fit it in an experiment (senseai-bench) and record the result.",
+   "kind": "no_literature",
+   "knob": "lgmd.inhib_spread_px",
+   "sentence": "lgmd.inhib_spread_px is not a published quantity: a model width in grid cells; it depends on the sensor's sampling."
+  },
+  {
+   "ask": "Add a claim at felidae.senses.vision.looming_peak_angle: the angular size at which looming-sensitive responses (or escape) peak, in degrees.",
+   "kind": "no_evidence",
+   "knob": "lgmd.ttc_alpha",
+   "sentence": "No usable claim at senses.vision.looming_peak_angle yet."
+  },
+  {
+   "ask": "Fit it in an experiment (senseai-bench) and record the result.",
+   "kind": "no_literature",
+   "knob": "lgmd.w_inhib",
+   "sentence": "lgmd.w_inhib is not a published quantity: a fitted model weight; set it from experiments, not from a paper."
+  },
+  {
+   "ask": "Fit it in an experiment (senseai-bench) and record the result.",
+   "kind": "no_literature",
+   "knob": "ts.integration_ticks",
+   "sentence": "ts.integration_ticks is not a published quantity: counted in sensor ticks, so it needs the tick length as well as the animal's temporal integration (a library open question)."
+  },
+  {
+   "ask": "Fit it in an experiment (senseai-bench) and record the result.",
+   "kind": "no_literature",
+   "knob": "ts.w_against",
+   "sentence": "ts.w_against is not a published quantity: a behavioural preference (felidae.behaviours.pounce is qualitative); set it from experiments."
+  },
+  {
+   "ask": "Fit it in an experiment (senseai-bench) and record the result.",
+   "kind": "no_literature",
+   "knob": "x.w_loom",
+   "sentence": "x.w_loom is not a published quantity: a behavioural weight; set it from experiments, not from a paper."
+  }
+ ],
+ "knobs": [
+  {
+   "default": 100.0,
+   "estimate": {
+    "agreement": "none",
+    "evidence": [],
+    "high": null,
+    "in_range": false,
+    "independent_sources": 0,
+    "knob": "cs.adapt_tau_ms",
+    "low": null,
+    "readiness": "insufficient",
+    "sentences": [
+     "No usable claim at senses.vision.light_adaptation_tau yet."
+    ],
+    "strength": 0.0,
+    "unit": "ms",
+    "value": null
+   },
+   "kind": "proposed",
+   "knob": "cs.adapt_tau_ms",
+   "passed": false,
+   "range": [
+    1.0,
+    10000.0
+   ],
+   "rule": {
+    "formula": "\u03c4_adapt = time constant of light adaptation",
+    "knob": "cs.adapt_tau_ms",
+    "leaf": "senses.vision.light_adaptation_tau",
+    "mapping": "close",
+    "methods": [
+     "electrophysiology",
+     "behavioural"
+    ],
+    "unit": "ms",
+    "why": "the retina divides each channel by a running mean with this time constant"
+   },
+   "sentence": "Not passed on (insufficient); circuits keeps its default 100.0.",
+   "unit": "ms"
+  },
+  {
+   "default": 0.5,
+   "estimate": {
+    "agreement": "none",
+    "evidence": [],
+    "high": null,
+    "in_range": false,
+    "independent_sources": 0,
+    "knob": "cs.sigma_center_deg",
+    "low": null,
+    "readiness": "insufficient",
+    "sentences": [
+     "No usable claim at senses.vision.rgc_center_radius yet."
+    ],
+    "strength": 0.0,
+    "unit": "deg",
+    "value": null
+   },
+   "kind": "measured",
+   "knob": "cs.sigma_center_deg",
+   "passed": false,
+   "range": [
+    0.05,
+    10.0
+   ],
+   "rule": {
+    "formula": "\u03c3_center = r_center / \u221a2",
+    "knob": "cs.sigma_center_deg",
+    "leaf": "senses.vision.rgc_center_radius",
+    "mapping": "exact",
+    "methods": [
+     "electrophysiology"
+    ],
+    "unit": "deg",
+    "why": "the retina stage is a difference of Gaussians; its centre width is this radius"
+   },
+   "sentence": "Not passed on (insufficient); circuits keeps its default 0.5.",
+   "unit": "deg"
+  },
+  {
+   "default": 5.0,
+   "estimate": {
+    "agreement": "none",
+    "evidence": [],
+    "high": null,
+    "in_range": false,
+    "independent_sources": 0,
+    "knob": "cs.surround_ratio",
+    "low": null,
+    "readiness": "insufficient",
+    "sentences": [
+     "No usable claim at senses.vision.rgc_surround_ratio yet."
+    ],
+    "strength": 0.0,
+    "unit": "ratio",
+    "value": null
+   },
+   "kind": "measured",
+   "knob": "cs.surround_ratio",
+   "passed": false,
+   "range": [
+    1.5,
+    20.0
+   ],
+   "rule": {
+    "formula": "surround_ratio = r_surround / r_center",
+    "knob": "cs.surround_ratio",
+    "leaf": "senses.vision.rgc_surround_ratio",
+    "mapping": "exact",
+    "methods": [
+     "electrophysiology"
+    ],
+    "unit": "ratio",
+    "why": "the retina stage's surround Gaussian is this many times wider than the centre"
+   },
+   "sentence": "Not passed on (insufficient); circuits keeps its default 5.0.",
+   "unit": "ratio"
+  },
+  {
+   "default": 35.0,
+   "estimate": {
+    "agreement": "none",
+    "evidence": [],
+    "high": null,
+    "in_range": false,
+    "independent_sources": 0,
+    "knob": "emd.delay_tau_ms",
+    "low": null,
+    "readiness": "insufficient",
+    "sentences": [
+     "No usable claim at senses.vision.motion_tf_optimum yet."
+    ],
+    "strength": 0.0,
+    "unit": "ms",
+    "value": null
+   },
+   "kind": "measured",
+   "knob": "emd.delay_tau_ms",
+   "passed": false,
+   "range": [
+    1.0,
+    1000.0
+   ],
+   "rule": {
+    "formula": "\u03c4_delay = 1000 / (2\u03c0 \u00b7 f_opt) ms (first-order low-pass Reichardt detector)",
+    "knob": "emd.delay_tau_ms",
+    "leaf": "senses.vision.motion_tf_optimum",
+    "mapping": "close",
+    "methods": [
+     "electrophysiology",
+     "behavioural"
+    ],
+    "unit": "Hz",
+    "why": "a Reichardt detector with a first-order low-pass delay \u03c4 responds most at f = 1/(2\u03c0\u03c4) (Borst & Egelhaaf 1989)"
+   },
+   "sentence": "Not passed on (insufficient); circuits keeps its default 35.0.",
+   "unit": "ms"
+  },
+  {
+   "default": 0.15,
+   "estimate": null,
+   "kind": "proposed",
+   "knob": "lgmd.ffi_threshold",
+   "passed": false,
+   "range": [
+    0.0,
+    1.0
+   ],
+   "rule": null,
+   "sentence": "Not set from the literature: a model threshold; set it from experiments, not from a paper. Circuits keeps its default 0.15 ratio.",
+   "unit": "ratio"
+  },
+  {
+   "default": 1.0,
+   "estimate": null,
+   "kind": "proposed",
+   "knob": "lgmd.inhib_spread_px",
+   "passed": false,
+   "range": [
+    0.25,
+    8.0
+   ],
+   "rule": null,
+   "sentence": "Not set from the literature: a model width in grid cells; it depends on the sensor's sampling. Circuits keeps its default 1.0 px.",
+   "unit": "px"
+  },
+  {
+   "default": 0.08,
+   "estimate": {
+    "agreement": "none",
+    "evidence": [],
+    "high": null,
+    "in_range": false,
+    "independent_sources": 0,
+    "knob": "lgmd.ttc_alpha",
+    "low": null,
+    "readiness": "insufficient",
+    "sentences": [
+     "No usable claim at senses.vision.looming_peak_angle yet."
+    ],
+    "strength": 0.0,
+    "unit": "1/deg",
+    "value": null
+   },
+   "kind": "measured",
+   "knob": "lgmd.ttc_alpha",
+   "passed": false,
+   "range": [
+    0.001,
+    1.0
+   ],
+   "rule": {
+    "formula": "\u03b1 = 2 / \u03b8_peak",
+    "knob": "lgmd.ttc_alpha",
+    "leaf": "senses.vision.looming_peak_angle",
+    "mapping": "close",
+    "methods": [
+     "electrophysiology",
+     "behavioural"
+    ],
+    "unit": "deg",
+    "why": "\u03b7(t) = C\u00b7\u03b8\u0307\u00b7exp(\u2212\u03b1\u03b8) peaks at \u03b8 = 2/\u03b1 (Gabbiani, Krapp & Laurent 1999)"
+   },
+   "sentence": "Not passed on (insufficient); circuits keeps its default 0.08.",
+   "unit": "1/deg"
+  },
+  {
+   "default": 0.5,
+   "estimate": null,
+   "kind": "proposed",
+   "knob": "lgmd.w_inhib",
+   "passed": false,
+   "range": [
+    0.0,
+    4.0
+   ],
+   "rule": null,
+   "sentence": "Not set from the literature: a fitted model weight; set it from experiments, not from a paper. Circuits keeps its default 0.5 ratio.",
+   "unit": "ratio"
+  },
+  {
+   "default": 3,
+   "estimate": null,
+   "kind": "proposed",
+   "knob": "ts.integration_ticks",
+   "passed": false,
+   "range": [
+    1.0,
+    1000.0
+   ],
+   "rule": null,
+   "sentence": "Not set from the literature: counted in sensor ticks, so it needs the tick length as well as the animal's temporal integration (a library open question). Circuits keeps its default 3 tick.",
+   "unit": "tick"
+  },
+  {
+   "default": 5.0,
+   "estimate": {
+    "agreement": "single",
+    "evidence": [
+     {
+      "as_stated": "5 deg",
+      "claim_id": "lib:felidae.senses.hearing.spatial_resolution",
+      "excluded": null,
+      "knob_high": 5.0,
+      "knob_low": 5.0,
+      "knob_value": 5.0,
+      "library_path": "felidae.senses.hearing.spatial_resolution",
+      "method": "behavioural",
+      "quality": {
+       "claim_id": "lib:felidae.senses.hearing.spatial_resolution",
+       "factors": [
+        {
+         "multiplier": 0.55,
+         "name": "status",
+         "sentence": "No quote from the paper backs it in the ledger yet."
+        },
+        {
+         "multiplier": 0.85,
+         "name": "reading",
+         "sentence": "Only the abstract is known to have been read."
+        },
+        {
+         "multiplier": 0.9,
+         "name": "library_confidence",
+         "sentence": "The library's authors rate it medium confidence."
+        }
+       ],
+       "gate": null,
+       "label": "low",
+       "score": 0.4208
+      },
+      "source_ids": [
+       "src:10.1016/0378-5955(88)90064-0"
+      ],
+      "species": "Felis catus",
+      "status": "unverified"
+     }
+    ],
+    "high": 5.0,
+    "in_range": true,
+    "independent_sources": 1,
+    "knob": "ts.sigma_bearing_deg",
+    "low": 5.0,
+    "readiness": "provisional",
+    "sentences": [
+     "5 deg from 1 claim(s) in 1 independent source(s), via \u03c3_bearing = minimum audible angle.",
+     "Only one independent source supports it; a second would make it ready.",
+     "The best claim scores 0.42 (needs 0.70 to be ready): No quote from the paper backs it in the ledger yet. Only the abstract is known to have been read. The library's authors rate it medium confidence."
+    ],
+    "strength": 0.2946,
+    "unit": "deg",
+    "value": 5.0
+   },
+   "kind": "measured",
+   "knob": "ts.sigma_bearing_deg",
+   "passed": true,
+   "range": [
+    0.1,
+    90.0
+   ],
+   "rule": {
+    "formula": "\u03c3_bearing = minimum audible angle",
+    "knob": "ts.sigma_bearing_deg",
+    "leaf": "senses.hearing.spatial_resolution",
+    "mapping": "close",
+    "methods": [
+     "behavioural"
+    ],
+    "unit": "deg",
+    "why": "the token matcher's bearing tolerance is the smallest angle the animal can tell apart; senseai-world's prior reads the same leaf"
+   },
+   "sentence": "Set to 5.0 deg (provisional, strength 0.29); circuits' default is 5.0.",
+   "unit": "deg"
+  },
+  {
+   "default": 0.5,
+   "estimate": null,
+   "kind": "proposed",
+   "knob": "ts.w_against",
+   "passed": false,
+   "range": [
+    0.0,
+    10.0
+   ],
+   "rule": null,
+   "sentence": "Not set from the literature: a behavioural preference (felidae.behaviours.pounce is qualitative); set it from experiments. Circuits keeps its default 0.5 ratio.",
+   "unit": "ratio"
+  },
+  {
+   "default": 0.5,
+   "estimate": null,
+   "kind": "proposed",
+   "knob": "x.w_loom",
+   "passed": false,
+   "range": [
+    0.0,
+    10.0
+   ],
+   "rule": null,
+   "sentence": "Not set from the literature: a behavioural weight; set it from experiments, not from a paper. Circuits keeps its default 0.5 ratio.",
+   "unit": "ratio"
+  }
+ ],
+ "policy": {
+  "min_readiness": "provisional"
+ },
+ "provenance": {
+  "circuits_registry_sha": "f465ce15033faba96b08acd4d264d42ae0a51c1c",
+  "profiles_sha": "-",
+  "quality_version": 1,
+  "research_sha": "test-sha",
+  "research_version": "0.1.0"
+ },
+ "representative_species": [
+  "Felis catus"
+ ],
+ "sources": {
+  "src:10.1016/0378-5955(88)90064-0": {
+   "authors": "Heffner RS, Heffner HE",
+   "doi": "10.1016/0378-5955(88)90064-0",
+   "title": "Sound localization acuity in the cat: effect of azimuth, signal duration, and test procedure",
+   "url": null,
+   "venue": "Hear Res",
+   "year": 1988
+  }
+ },
+ "summary": [
+  "1 of 12 literature knobs get a value from the felidae evidence (0 ready); the other 11 keep circuits' defaults.",
+  "11 engineering knobs are set by the circuit design, not by papers.",
+  "11 gap(s) say what to measure or verify next."
+ ]
+}
