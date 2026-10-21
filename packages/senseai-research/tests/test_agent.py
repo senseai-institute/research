@@ -257,3 +257,24 @@ def test_tools_are_strict_sorted_and_complete() -> None:
 def test_agent_doc_is_generated_from_code() -> None:
     committed = Path(__file__).resolve().parents[3] / "docs" / "AGENT.md"
     assert committed.read_text() == render(), "run `senseai-research agent-doc`"
+
+
+def test_no_api_key_is_said_plainly(
+    store: Store, settings: Settings, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import anthropic
+
+    from senseai_research.agent.client import NO_KEY
+
+    for v in ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN"):
+        monkeypatch.delenv(v, raising=False)
+    set_client_factory(lambda: anthropic.Anthropic(api_key=None, max_retries=0))
+    try:
+        agent = Agent(store, settings, offline=True)
+        conv = agent.new_conversation("user:ana")
+        events: list[tuple[str, dict[str, Any]]] = []
+        r = agent.send(conv, "hello", emit=lambda k, d: events.append((k, d)))
+    finally:
+        set_client_factory(None)
+    assert r.stop == "error"
+    assert ("error", {"message": NO_KEY, "code": "no_api_key"}) in events

@@ -116,6 +116,12 @@ library PRs on GitHub, `GITHUB_TOKEN`) in `~/senseai/research.env`; `research-ct
 says whether the model is reachable. The research server listens on 127.0.0.1 only, so people
 reach it through the viewer, behind the viewer password.
 
+### On Railway, next to Studio
+
+Studio is the front end; this service is the backend. [`docs/DEPLOY.md`](docs/DEPLOY.md) sets
+up both: the Docker image, the `/data` volume, `RESEARCH_PROXY_TOKEN` shared with Studio, and
+`RESEARCH_URL` on Studio. [`docs/API.md`](docs/API.md) is the contract Studio codes against.
+
 ### API keys
 
 [`docs/APIS.md`](docs/APIS.md) lists every outside service: what it is for, whether it needs

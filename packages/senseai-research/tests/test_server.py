@@ -1,8 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
 from __future__ import annotations
 
+import argparse
 import json
 from collections.abc import Iterator
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -67,7 +69,26 @@ def test_refuses_anything_but_loopback(settings: Settings, store: Store) -> None
     app = create_app(settings, store=store, model_check=lambda: (False, "x"))
     with TestClient(app) as client:
         r = client.get("/api/research/health")
-    assert r.status_code == 403 and "only the viewer" in r.json()["detail"]
+        assert client.get("/healthz").json() == {"ok": True}, "open for the platform"
+    assert r.status_code == 403 and "RESEARCH_PROXY_TOKEN" in r.json()["detail"]
+
+
+def test_studio_over_the_network_needs_the_shared_token(settings: Settings, store: Store) -> None:
+    cfg = settings.with_(proxy_token="t0k3n-shared-with-studio")
+    app = create_app(cfg, store=store, model_check=lambda: (True, "ok"))
+    with TestClient(app) as client:  # the test client is not loopback
+        assert client.get("/api/research/health").status_code == 403
+        wrong = {"X-SenseAI-Proxy-Token": "guess"}
+        assert client.get("/api/research/health", headers=wrong).status_code == 403
+        ok = {"X-SenseAI-Proxy-Token": "t0k3n-shared-with-studio", "X-SenseAI-User": "alice"}
+        assert client.get("/api/research/health", headers=ok).status_code == 200
+        assert client.post("/api/research/conversations", headers=ok).status_code == 200
+
+
+def test_serve_refuses_a_public_address_without_the_token(settings: Settings) -> None:
+    from senseai_research import cli
+
+    assert cli.cmd_serve(argparse.Namespace(port=None, host="0.0.0.0"), settings) == 2
 
 
 def test_health(server: tuple[TestClient, Store, Any]) -> None:
@@ -212,3 +233,26 @@ def test_health_checks_the_model_on_a_freshly_booted_machine(
     )
     with TestClient(app) as client:
         assert client.get("/api/research/health").json()["model_reachable"] is True
+
+
+def test_contract_lists_every_event_the_code_emits() -> None:
+    import re
+
+    from senseai_research.server import contract
+
+    src = Path(__file__).resolve().parents[1] / "src" / "senseai_research"
+    emitted = set()
+    for f in src.rglob("*.py"):
+        text = f.read_text()
+        emitted |= set(re.findall(r'emit\(\s*"([a-z_]+)"', text))
+        emitted |= set(re.findall(r'q\.put\(\(\s*"([a-z_]+)"', text))
+    assert emitted and emitted <= set(contract.EVENTS), sorted(emitted - set(contract.EVENTS))
+
+
+def test_api_doc_is_generated_from_code(settings: Settings, store: Store) -> None:
+    from senseai_research.server import contract
+
+    app = create_app(settings, store=store, model_check=lambda: (True, "ok"))
+    committed = Path(__file__).resolve().parents[3] / "docs" / "API.md"
+    assert committed.read_text() == contract.render_doc(app), "run `senseai-research api-doc`"
+    assert all(d for _, _, d in contract.routes(app)), "every route needs a one-line docstring"
