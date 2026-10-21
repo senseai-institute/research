@@ -308,6 +308,7 @@ Where they disagree, the code wins.
 |---|---|---|
 | profiles | `018d2d6009959d0b66a90f234ffcb4da3c0a059d` | as in the spec |
 | world | `8ec2cfdfbfd1671a0b3aad0263f601018dc68edb` | as in the spec |
+| circuits | `314732bf506ec67f4f1ccda55c45af1c3c852b44` | added after the spec: the token-space prior and the circuit knobs live here (deviations 5, 17) |
 | bench | `d7c963ac6497bf7b035cedbac47a3ee41913f975` | as in the spec |
 | viewer | `a7878717ad55b5b39517b172b2ac982d87daa392` | spec says `96d83e8`; main had moved on (PR #8 merged) |
 
@@ -337,17 +338,26 @@ Where they disagree, the code wins.
    through `--profiles-repo`.
 5. **World prior provenance kinds** are `physics | measured | proposed`, not `measured |
    default`. The impact report shows the kind as written. `import senseai_world.prior` pulls in
-   torch (`prior/__init__.py` imports the model), so `impact/world.py` loads only `prior/params.py`
-   (it needs nothing beyond PyYAML). It finds that file in the installed package, in the stack
-   checkout `$SENSEAI_STACK_DIR/world`, or at `SENSEAI_WORLD_PARAMS`. World is proprietary and this
-   repo is public, so no copy is vendored. If world is not on the machine, the impact record says
-   "not checked" rather than guessing. The tests use a small test double with the same interface
-   (`tests/fixtures/world/params.py`).
+   torch (`prior/__init__.py` imports the model), so `impact/world.py` loads one file that needs
+   nothing beyond NumPy and PyYAML. **The prior has moved:** it now lives in senseai-circuits
+   (`senseai_circuits/tokenspace.py`, Apache-2.0). World re-exports it (world#10), so world's
+   `prior/params.py` becomes a one-line import of `senseai_circuits`. The lookup order is:
+   - `SENSEAI_WORLD_PARAMS`;
+   - an installed senseai-circuits;
+   - world's `prior/params.py` (installed package or `$SENSEAI_STACK_DIR/world`), only when that
+     file still defines the prior itself. A re-exporting one is skipped when circuits is missing,
+     rather than failing to import.
+
+   No copy is vendored. If no file is found, the impact record says "not checked" rather than
+   guessing. The tests use a small test double with the same interface
+   (`tests/fixtures/world/params.py`). They also cover the circuits-first lookup and the skipped
+   re-exporting world.
 6. **The felidae detection threshold is `confidence: high` in the YAML.** It is still
    `unverified` in the ledger: CITATIONS.md marks its source as read only as an abstract, and
    there is no full-text quote. `Claim.library_confidence` keeps the library's own label.
 7. **Python ≥ 3.11**, not 3.10: senseai-profiles requires 3.11.
-8. **Dependencies.** senseai-world and senseai-bench are not package dependencies. Bench runs as
+8. **Dependencies.** senseai-world, senseai-bench and senseai-circuits are not package
+   dependencies (circuits is found when installed in the stack, deviation 5). Bench runs as
    a subprocess (`SENSEAI_BENCH_CMD`), and world is read as described in 5. Both pull in torch.
    senseai-profiles is a pinned git dependency.
 9. **Repository visibility.** `senseai-institute/research` already existed and is public; the
@@ -390,3 +400,15 @@ Where they disagree, the code wins.
     and only without a prompt, to add `RESEARCH_URL` to `/etc/senseai-viewer.env` and restart the
     viewer. `tests/test_ec2_scripts.py` runs both scripts in a sandbox HOME, and with
     `SENSEAI_VIEWER_CMD` set checks `/research` behind the viewer password.
+17. **Circuit knobs are a second impact target (not built yet).** Since circuits P1, a species
+    also sets the knobs of the L1 circuits: receptive-field size, motion-detector delay,
+    looming threshold. They live in its profile spec's `circuits:` block (profiles#9), with the
+    prior bundle's `meta["circuits"]` as fallback. The SDK runs them (sdk#5) and Studio shows
+    them (studio#5). The impact record should gain a row per knob a library change moves:
+    - the old and new value, via `senseai_circuits.params.CircuitParams.from_profile`;
+    - the knob's `kind` and `source`, from `senseai-circuits knobs --json`.
+
+    Today no rule writes knobs from the library, so such a row cannot change yet. The `measured`
+    circuit defaults that circuits' `docs/papers.md` marks *verify* (`cs.sigma_center_deg`,
+    `emd.delay_tau_ms`, ...) should enter the ledger as `unverified` claims under the path
+    `circuits:<knob>`.

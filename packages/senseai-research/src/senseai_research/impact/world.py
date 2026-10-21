@@ -1,10 +1,14 @@
 # SPDX-License-Identifier: Apache-2.0
 """World prior before and after a library change: ``PriorParams.from_library`` on both files.
 
-``senseai_world.prior`` imports the torch model in its ``__init__``, so this module never
-imports the package. It finds world's ``prior/params.py`` (installed package, the stack checkout
-``$SENSEAI_STACK_DIR/world``, or ``SENSEAI_WORLD_PARAMS``) and loads that one file, which only
-needs PyYAML. If world is nowhere on this machine, the impact record says so instead of guessing.
+The token-space prior now lives in senseai-circuits (``senseai_circuits.tokenspace``, NumPy and
+PyYAML only); senseai-world re-exports it, so world's ``prior/params.py`` is a one-line import of
+``senseai_circuits`` and no longer loads on its own. This module looks, in order, for
+``SENSEAI_WORLD_PARAMS``, an installed senseai-circuits (``tokenspace.py``), and world's own
+``prior/params.py`` (installed package or the stack checkout ``$SENSEAI_STACK_DIR/world``) when
+that file still defines the prior itself. ``senseai_world.prior`` imports the torch model in its
+``__init__``, so the package itself is never imported. If no usable file is on this machine, the
+impact record says so instead of guessing.
 
 On world 8ec2cfd, ``from_library`` reads only ``senses[hearing].spatial_resolution``; every other
 parameter keeps a flagged default. A vision change therefore reaches the profile, not the world
@@ -25,20 +29,38 @@ from senseai_research.ledger.models import WorldRow
 _MODULE = "_senseai_research_world_params"
 
 
+def _package_dirs(name: str) -> list[Path]:
+    try:
+        spec = importlib.util.find_spec(name)
+    except (ImportError, ValueError):
+        spec = None
+    if spec is None or not spec.submodule_search_locations:
+        return []
+    return [Path(loc) for loc in spec.submodule_search_locations]
+
+
+def _reexports_circuits(path: Path) -> bool:
+    """World after world#10: its params.py only re-exports senseai_circuits.tokenspace."""
+    try:
+        return "senseai_circuits" in path.read_text(encoding="utf-8")
+    except OSError:
+        return False
+
+
 def find_params_file(cfg: Settings) -> Path | None:
     if cfg.world_params is not None and cfg.world_params.is_file():
         return cfg.world_params
-    try:
-        spec = importlib.util.find_spec("senseai_world")
-    except (ImportError, ValueError):
-        spec = None
-    if spec is not None and spec.submodule_search_locations:
-        for loc in spec.submodule_search_locations:
-            p = Path(loc) / "prior" / "params.py"
-            if p.is_file():
-                return p
-    p = cfg.stack / "world" / "src" / "senseai_world" / "prior" / "params.py"
-    return p if p.is_file() else None
+    for d in _package_dirs("senseai_circuits"):
+        p = d / "tokenspace.py"
+        if p.is_file():
+            return p
+    candidates = [d / "prior" / "params.py" for d in _package_dirs("senseai_world")]
+    candidates.append(cfg.stack / "world" / "src" / "senseai_world" / "prior" / "params.py")
+    for p in candidates:
+        # a re-exporting params.py needs senseai-circuits, which was not found above
+        if p.is_file() and not _reexports_circuits(p):
+            return p
+    return None
 
 
 def _load(path: Path) -> ModuleType:
