@@ -28,12 +28,17 @@ response schemas are in the OpenAPI document at `/api/research/openapi.json`.
 | GET | `/api/research/conversations/{cid}` | A conversation as the page shows it: messages, tool chips, cards, notes. |
 | POST | `/api/research/conversations/{cid}/messages` | Send a message; the reply streams as Server-Sent Events (see Chat events). |
 | GET | `/api/research/experiments/{exp_id}` | An experiment: baseline vs patched per arm, chance hit rates, progress. |
+| GET | `/api/research/handoff` | Per clade: how many circuit knobs the evidence sets, the gaps, the last release. |
+| GET | `/api/research/handoff/{clade}` | The package as the evidence stands now (a draft until a person releases it). |
+| POST | `/api/research/handoff/{clade}/propose` | Ask for the package to be released; approve it at /api/research/actions/{id}. |
+| GET | `/api/research/handoff/{clade}/released` | The last package a person released for this clade: what circuits reads. |
 | GET | `/api/research/health` | Version, model reachability, data root, bench, profiles SHA. |
 | GET | `/api/research/hypotheses` | Hypotheses and open questions. |
 | GET | `/api/research/impact/{impact_id}` | A stored impact record: consumers, profile diff, reflex, world prior. |
 | GET | `/api/research/passages/{passage_id}` | A passage with its context and source. |
 | GET | `/api/research/proposals` | Library change proposals and their pull requests. |
 | GET | `/api/research/proposals/{pid}/{what}` | Download a proposal's patch or pull-request text. |
+| GET | `/api/research/schema/handoff` | JSON Schema of the package research hands to circuits. |
 | GET | `/api/research/settings` | Outside services and whether their keys are set (never the values). |
 | POST | `/api/research/settings/{iid}/check` | Test one service's key with one small request. |
 | GET | `/api/research/start` | The start screen: open questions and the least-verified values. |

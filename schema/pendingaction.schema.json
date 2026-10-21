@@ -65,7 +65,8 @@
     "claim_revision",
     "new_claim",
     "hypothesis",
-    "proposal"
+    "proposal",
+    "handoff"
    ],
    "title": "Kind",
    "type": "string"
