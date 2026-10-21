@@ -129,8 +129,13 @@ def test_reflex_theta_follows_d1(store: Store, settings: Settings) -> None:
     assert prior.theta_old == prior.theta_new == pytest.approx(2.6)
 
 
-def test_world_missing_is_said_not_guessed(store: Store, settings: Settings) -> None:
-    imp = _optics_removed(store, settings.with_(world_params=None))
+def test_world_missing_is_said_not_guessed(
+    store: Store, settings: Settings, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    from senseai_research.impact import world as wd
+
+    monkeypatch.setattr(wd, "_package_dirs", lambda name: [])  # nothing installed on this machine
+    imp = _optics_removed(store, settings.with_(world_params=None, stack_dir=tmp_path))
     assert not imp.world_available and imp.world_rows == []
     assert "not installed" in imp.world_note
 
@@ -146,3 +151,51 @@ def test_library_edit_keeps_the_file_byte_for_byte_elsewhere() -> None:
     diff = libyaml.unified_diff(old, new, "library/felidae.yaml")
     changed = [ln for ln in diff.splitlines() if ln[:1] in "+-" and ln[:3] not in ("+++", "---")]
     assert changed == ["-      value: -0.74", "+      value: 0.0"]
+
+
+def _fake_package(root: Path, name: str, files: dict[str, str]) -> Path:
+    pkg = root / name
+    for rel, text in files.items():
+        (pkg / rel).parent.mkdir(parents=True, exist_ok=True)
+        (pkg / rel).write_text(text)
+    (pkg / "__init__.py").touch()
+    return pkg
+
+
+def test_prior_is_found_in_senseai_circuits_first(
+    store: Store, settings: Settings, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """The token-space prior moved to senseai_circuits.tokenspace; world only re-exports it."""
+    from senseai_research.impact import world as wd
+
+    double = (FIXTURES / "world" / "params.py").read_text()
+    circuits = _fake_package(tmp_path, "senseai_circuits", {"tokenspace.py": double})
+    world = _fake_package(
+        tmp_path,
+        "senseai_world",
+        {"prior/params.py": "from senseai_circuits.tokenspace import PriorParams\n"},
+    )
+    dirs = {"senseai_circuits": [circuits], "senseai_world": [world]}
+    monkeypatch.setattr(wd, "_package_dirs", lambda name: dirs.get(name, []))
+    cfg = settings.with_(world_params=None, stack_dir=tmp_path)
+    assert wd.find_params_file(cfg) == circuits / "tokenspace.py"
+    imp = _optics_removed(store, cfg)
+    assert imp.world_available and any(r.param == "sigma_bearing_deg" for r in imp.world_rows)
+
+
+def test_a_reexporting_world_without_circuits_is_not_loaded(
+    settings: Settings, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    from senseai_research.impact import world as wd
+
+    shim = "from senseai_circuits.tokenspace import Kind, Param, PriorParams\n"
+    world = _fake_package(tmp_path, "senseai_world", {"prior/params.py": shim})
+    monkeypatch.setattr(
+        wd, "_package_dirs", lambda name: [world] if name == "senseai_world" else []
+    )
+    assert wd.find_params_file(settings.with_(world_params=None, stack_dir=tmp_path)) is None
+    # an older world that still defines the prior itself is used
+    (world / "prior" / "params.py").write_text((FIXTURES / "world" / "params.py").read_text())
+    assert wd.find_params_file(settings.with_(world_params=None, stack_dir=tmp_path)) == (
+        world / "prior" / "params.py"
+    )

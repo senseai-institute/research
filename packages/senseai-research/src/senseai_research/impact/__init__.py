@@ -107,7 +107,10 @@ def preview(
     if not sums:
         sentences.append("No profile value changes: no profile rule reads this value.")
     if params is None:
-        note = "senseai-world is not installed here, so the world prior was not checked."
+        note = (
+            "senseai-circuits is not installed here (nor a senseai-world that still defines the "
+            "prior), so the world prior was not checked."
+        )
     elif reached:
         note = "The world prior changes: " + ", ".join(r.param for r in world_rows if r.changed)
     else:
