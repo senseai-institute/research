@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """``senseai-research``: the command line.
 
-Commands: ``import``, ``export``, ``schema``, ``backup``, ``claims``, ``impact``,
+Commands: ``import``, ``export``, ``schema``, ``backup``, ``claims``, ``candidates``, ``impact``,
 ``experiment``, ``pending``, ``approve``, ``reject``, ``ask``, ``agent-doc``, ``api-doc``,
 ``settings``, ``serve``.
 """
@@ -98,6 +98,7 @@ def cmd_schema(a: argparse.Namespace, cfg: Settings) -> int:
         "Approval",
         "PendingAction",
         "Impact",
+        "CircuitCandidate",
         "Event",
     ]
     for n in names:
@@ -148,6 +149,36 @@ def cmd_claims(a: argparse.Namespace, cfg: Settings) -> int:
         if a.path and not c.library_path.startswith(a.path):
             continue
         print(f"{c.status:<11} {c.library_path} = {c.quantity.text()}")
+    return 0
+
+
+def _candidates_args(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--refresh", action="store_true", help="re-score every claim first")
+    p.add_argument("--clade", help="only candidates for this clade (library file stem)")
+    p.add_argument("--sense", help="only candidates for this sense id")
+    p.add_argument("--json", action="store_true", help="the senseai-circuits candidate@1 records")
+
+
+@command("candidates", "library values scored for turning into a circuit prior", _candidates_args)
+def cmd_candidates(a: argparse.Namespace, cfg: Settings) -> int:
+    from senseai_research import candidates
+
+    store = open_store(cfg)
+    if a.refresh:
+        res = candidates.derive(store, cfg, actor="user:cli")
+        print(f"stored {res['stored']} candidates, skipped {res['skipped']} ({res['circuits']})")
+    rows = candidates.ranked(store, a.clade, a.sense)
+    if a.json:
+        print(json.dumps([candidates.to_circuits(store, c) for c in rows], indent=1))
+        return 0
+    for c in rows:
+        ca = c.circuitability or {}
+        pr = "  —  " if c.priority is None else f"{c.priority:.3f}"
+        level = ca.get("level", "not checked")
+        print(
+            f"{pr} {c.clade}.{c.sense:<10} L{c.likelihood:.2f} Q{c.quality:.2f} {level:<11} "
+            f"{c.library_path}  {ca.get('summary', c.circuits_note)}"
+        )
     return 0
 
 

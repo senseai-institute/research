@@ -1,0 +1,170 @@
+{
+ "additionalProperties": false,
+ "description": "A library value scored for turning into a circuit prior (``candidates.py``).\n\n``likelihood`` and ``quality`` are computed here from the ledger; ``circuitability`` is\nwhat ``senseai-circuits assess`` says about it (None when circuits was not available).\nPeople move ``status`` from Studio's Design tab; nothing here changes the library.",
+ "properties": {
+  "circuitability": {
+   "anyOf": [
+    {
+     "additionalProperties": true,
+     "type": "object"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Circuitability"
+  },
+  "circuits_note": {
+   "default": "",
+   "title": "Circuits Note",
+   "type": "string"
+  },
+  "circuits_version": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Circuits Version"
+  },
+  "clade": {
+   "title": "Clade",
+   "type": "string"
+  },
+  "claim_ids": {
+   "items": {
+    "type": "string"
+   },
+   "title": "Claim Ids",
+   "type": "array"
+  },
+  "created_at": {
+   "title": "Created At",
+   "type": "string"
+  },
+  "created_by": {
+   "title": "Created By",
+   "type": "string"
+  },
+  "decided_by": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Decided By"
+  },
+  "decision_rationale": {
+   "default": "",
+   "title": "Decision Rationale",
+   "type": "string"
+  },
+  "design_ids": {
+   "items": {
+    "type": "string"
+   },
+   "title": "Design Ids",
+   "type": "array"
+  },
+  "evidence_clade": {
+   "title": "Evidence Clade",
+   "type": "string"
+  },
+  "id": {
+   "title": "Id",
+   "type": "string"
+  },
+  "library_path": {
+   "title": "Library Path",
+   "type": "string"
+  },
+  "likelihood": {
+   "maximum": 1,
+   "minimum": 0,
+   "title": "Likelihood",
+   "type": "number"
+  },
+  "mechanism": {
+   "default": "",
+   "title": "Mechanism",
+   "type": "string"
+  },
+  "modality": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Modality"
+  },
+  "priority": {
+   "anyOf": [
+    {
+     "type": "number"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Priority"
+  },
+  "proposed": {
+   "additionalProperties": true,
+   "title": "Proposed",
+   "type": "object"
+  },
+  "quality": {
+   "maximum": 1,
+   "minimum": 0,
+   "title": "Quality",
+   "type": "number"
+  },
+  "score_parts": {
+   "additionalProperties": true,
+   "title": "Score Parts",
+   "type": "object"
+  },
+  "sense": {
+   "title": "Sense",
+   "type": "string"
+  },
+  "status": {
+   "default": "open",
+   "enum": [
+    "open",
+    "in_design",
+    "adopted",
+    "rejected"
+   ],
+   "title": "Status",
+   "type": "string"
+  }
+ },
+ "required": [
+  "id",
+  "created_by",
+  "clade",
+  "sense",
+  "claim_ids",
+  "library_path",
+  "evidence_clade",
+  "likelihood",
+  "quality"
+ ],
+ "title": "CircuitCandidate",
+ "type": "object"
+}

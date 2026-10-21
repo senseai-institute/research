@@ -21,6 +21,10 @@ response schemas are in the OpenAPI document at `/api/research/openapi.json`.
 |---|---|---|
 | GET | `/api/research/actions` | Pending changes waiting for a person. |
 | POST | `/api/research/actions/{action_id}/{decision}` | Approve or reject a pending change, with the person's rationale. |
+| GET | `/api/research/circuit-candidates` | Circuit candidates, highest priority first: scores, circuitability, status. |
+| POST | `/api/research/circuit-candidates/refresh` | Re-score every claim as a circuit candidate (runs senseai-circuits assess). |
+| GET | `/api/research/circuit-candidates/{cid:path}` | One candidate with its claims, passages and the senseai-circuits candidate@1 record. |
+| POST | `/api/research/circuit-candidates/{cid:path}/decision` | A person moves a candidate: in_design, adopted (with the design), rejected, open. |
 | GET | `/api/research/claims` | Claims, filtered by library path prefix or status. |
 | GET | `/api/research/claims/{claim_id:path}` | One claim with its sources, passage and full revision history. |
 | GET | `/api/research/conversations` | The 30 most recent conversations. |
