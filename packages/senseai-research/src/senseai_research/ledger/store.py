@@ -30,6 +30,7 @@ from senseai_research.ledger.models import (
     HUMAN_ONLY_STATUSES,
     NEEDS_PASSAGE,
     Approval,
+    CircuitCandidate,
     Claim,
     ClaimRevision,
     Event,
@@ -115,6 +116,8 @@ _CREATE_EVENTS: Mapping[str, tuple[str, str]] = {
     "action.pending": ("action", "action"),
     "action.resolved": ("action", "action"),
     "conversation.created": ("conversation", "conversation"),
+    "candidate.created": ("candidate", "candidate"),
+    "candidate.updated": ("candidate", "candidate"),
     "handoff.released": ("handoff", "handoff"),
 }
 
@@ -409,6 +412,15 @@ class Store:
             raise LedgerError("approvals are recorded once")
         self.append("approval.recorded", ap.by, {"approval": ap.model_dump()})
         return ap
+
+    def put_candidate(self, c: CircuitCandidate, actor: str) -> CircuitCandidate:
+        """Create or update a circuit candidate; an unchanged record appends nothing."""
+        have = self.get_raw("candidate", c.id)
+        if have == json.loads(_dumps(c.model_dump())):
+            return c
+        kind = "candidate.created" if have is None else "candidate.updated"
+        self.append(kind, actor, {"candidate": c.model_dump()})
+        return c
 
     def put_proposal(self, p: Proposal, actor: str) -> Proposal:
         """Create or update a library-change proposal. Only verified-quote claims qualify (N2)."""

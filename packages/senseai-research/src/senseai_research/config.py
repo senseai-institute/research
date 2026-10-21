@@ -36,6 +36,7 @@ class Settings:
     model: str = DEFAULT_MODEL
     stack_dir: Path | None = None
     world_params: Path | None = None
+    circuits_cmd: str = "senseai-circuits"
     host: str = "127.0.0.1"
     proxy_token: str | None = None  # shared with Studio; required to listen beyond loopback
     circuits_repo: str | None = None  # owner/name: open handoff PRs there (docs/HANDOFF.md)
@@ -86,6 +87,7 @@ class Settings:
             model=os.environ.get("RESEARCH_MODEL", DEFAULT_MODEL),
             stack_dir=_path("SENSEAI_STACK_DIR"),
             world_params=_path("SENSEAI_WORLD_PARAMS"),
+            circuits_cmd=os.environ.get("SENSEAI_CIRCUITS_CMD") or "senseai-circuits",
             host=os.environ.get("RESEARCH_HOST") or "127.0.0.1",
             proxy_token=os.environ.get("RESEARCH_PROXY_TOKEN") or None,
             circuits_repo=os.environ.get("RESEARCH_CIRCUITS_REPO") or None,

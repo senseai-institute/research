@@ -241,6 +241,7 @@ The PR also runs the profiles CI.
 | `SENSEAI_BENCH_PYTHON` | same as above |
 | `GITHUB_TOKEN` | optional; without it, approval produces a patch file + PR body instead of a PR |
 | `RESEARCH_CURATE_S3` | optional cache mirror |
+| `SENSEAI_CIRCUITS_CMD` | default `senseai-circuits`; scores circuit candidates (`assess`). Without it candidates are stored with circuitability "not checked" |
 
 ## 10. Viewer page (second PR, in `viewer`)
 
@@ -308,9 +309,43 @@ Where they disagree, the code wins.
 |---|---|---|
 | profiles | `018d2d6009959d0b66a90f234ffcb4da3c0a059d` | as in the spec |
 | world | `8ec2cfdfbfd1671a0b3aad0263f601018dc68edb` | as in the spec |
-| circuits | `314732bf506ec67f4f1ccda55c45af1c3c852b44` | added after the spec: the token-space prior and the circuit knobs live here (deviations 5, 17) |
+| circuits | `af4ac69` (branch `claude/new-session-fhne7e`) | added after the spec: the token-space prior, the circuit knobs, and `assess` for circuit candidates (deviations 5, 17, 18) |
 | bench | `d7c963ac6497bf7b035cedbac47a3ee41913f975` | as in the spec |
 | viewer | `a7878717ad55b5b39517b172b2ac982d87daa392` | spec says `96d83e8`; main had moved on (PR #8 merged) |
+
+## Circuit candidates (added after the spec)
+
+senseai-circuits holds the fixed circuits that learned models train on top of; their knobs
+need numbers from the library. `candidates.py` turns the ledger into **circuit candidates**,
+one per library value for its own clade's sense, plus one per value from another clade that
+would set a circuit knob in a clade of the same modality. Each carries two scores in [0, 1]
+computed by code, with every factor in `score_parts`:
+
+- **quality** (is the number true?): claim status (verified 1, extracted 0.75, disputed 0.35,
+  unverified 0.25) × library confidence (high 1, medium 0.7, low 0.4) × method
+  (electrophysiology 1 … model 0.5) × how much of the source a person read (CITATIONS.md
+  "Checked": full text 1, abstract 0.7, secondary 0.5, record only 0.4).
+- **likelihood** (does it apply to the target species?): species distance from the target
+  clade's representative species (same species 1, same genus 0.9, same clade 0.75, not
+  recorded 0.6, other clade 0.35) × 0.7 if a claim on the same path is disputed.
+
+The weights are proposed, not fitted. `senseai-circuits assess` then adds **circuitability**,
+which only circuits can judge: `knob` (sets an existing knob, unit converted, in range),
+`circuit` (fits a circuit type, no knob for it), `new` (needs a new circuit) or `none`, and
+`priority = likelihood × quality × circuitability score`. `none` candidates are not stored, and
+a cross-clade candidate is kept only at `knob` level. The exchange format is circuits'
+`senseai-circuits/candidate@1` (`candidates.to_circuits`).
+
+People design from candidates in senseai-studio's Design tab and report back with
+`POST /api/research/circuit-candidates/{id}/decision` (`in_design`, `adopted` with the design
+id, `rejected`; a person and a one-sentence rationale, as for an Approval). Re-scoring keeps
+those decisions. Nothing here edits the library or a profile: an adopted design reaches the
+profile spec's `circuits:` block through a profile PR that Studio prepares.
+
+```bash
+senseai-research candidates --refresh               # re-score, then list by priority
+senseai-research candidates --clade felidae --json  # candidate@1 records for senseai-circuits
+```
 
 ## Deviations
 
@@ -412,3 +447,8 @@ Where they disagree, the code wins.
     circuit defaults that circuits' `docs/papers.md` marks *verify* (`cs.sigma_center_deg`,
     `emd.delay_tau_ms`, ...) should enter the ledger as `unverified` claims under the path
     `circuits:<knob>`.
+18. **Circuit candidates are new.** The spec has no record for "can this value become part of a
+    circuit". `CircuitCandidate` (`schema/circuitcandidate.schema.json`) and the
+    `/api/research/circuit-candidates` routes add it; see "Circuit candidates" above. The
+    candidate's id is `cc:<target clade>.<sense>:<library path>`, so re-scoring updates the same
+    record and keeps the people's decisions.

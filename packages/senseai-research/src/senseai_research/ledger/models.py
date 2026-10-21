@@ -351,6 +351,38 @@ class Impact(Record):
     sentences: list[str] = Field(default_factory=list)
 
 
+CandidateStatus = Literal["open", "in_design", "adopted", "rejected"]
+
+
+class CircuitCandidate(Record):
+    """A library value scored for turning into a circuit prior (``candidates.py``).
+
+    ``likelihood`` and ``quality`` are computed here from the ledger; ``circuitability`` is
+    what ``senseai-circuits assess`` says about it (None when circuits was not available).
+    People move ``status`` from Studio's Design tab; nothing here changes the library.
+    """
+
+    clade: str  # the target clade (library file stem), not necessarily where it was measured
+    sense: str
+    modality: str | None = None
+    mechanism: str = ""
+    claim_ids: list[str]
+    library_path: str
+    evidence_clade: str
+    likelihood: float = Field(ge=0, le=1)
+    quality: float = Field(ge=0, le=1)
+    score_parts: dict[str, Any] = Field(default_factory=dict)
+    proposed: dict[str, Any] = Field(default_factory=dict)
+    circuitability: dict[str, Any] | None = None
+    circuits_version: str | None = None
+    circuits_note: str = ""
+    priority: float | None = None
+    status: CandidateStatus = "open"
+    design_ids: list[str] = Field(default_factory=list)
+    decided_by: str | None = None
+    decision_rationale: str = ""
+
+
 ActionKind = Literal["claim_revision", "new_claim", "hypothesis", "proposal", "handoff"]
 ActionStatus = Literal["pending", "approved", "rejected", "failed"]
 
@@ -402,6 +434,8 @@ __all__ = [
     "ActionStatus",
     "Approval",
     "ArmResult",
+    "CandidateStatus",
+    "CircuitCandidate",
     "Claim",
     "ClaimRevision",
     "ClaimStatus",

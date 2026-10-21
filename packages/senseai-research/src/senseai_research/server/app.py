@@ -25,7 +25,7 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
 
-from senseai_research import __version__, handoff, integrations, views
+from senseai_research import __version__, candidates, handoff, integrations, views
 from senseai_research.actions import ActionError, propose_handoff
 from senseai_research.agent import Agent
 from senseai_research.config import Settings
@@ -34,6 +34,7 @@ from senseai_research.experiments.record import compare
 from senseai_research.handoff import deliver
 from senseai_research.impact import git_sha
 from senseai_research.ledger.models import (
+    CircuitCandidate,
     Claim,
     Experiment,
     Hypothesis,
@@ -61,6 +62,12 @@ class MessageBody(BaseModel):
 
 class DecisionBody(BaseModel):
     rationale: str = Field(min_length=1, max_length=5000)
+
+
+class CandidateDecisionBody(BaseModel):
+    status: str = Field(description="open, in_design, adopted or rejected")
+    rationale: str = Field(min_length=1, max_length=5000)
+    design_id: str | None = Field(default=None, max_length=200)
 
 
 class HandoffBody(BaseModel):
@@ -315,6 +322,65 @@ def create_app(
             headers={"Content-Disposition": f'attachment; filename="{name}"'},
         )
 
+    # -- circuit candidates (read by Studio's Design tab and senseai-circuits) -------------
+
+    @app.get("/api/research/circuit-candidates")
+    def circuit_candidates(
+        clade: str | None = None, sense: str | None = None, status: str | None = None
+    ) -> list[dict[str, Any]]:
+        """Circuit candidates, highest priority first: scores, circuitability, status."""
+        return [
+            c.model_dump()
+            for c in candidates.ranked(store, clade, sense)
+            if status is None or c.status == status
+        ]
+
+    @app.post("/api/research/circuit-candidates/refresh")
+    def refresh_candidates(x_senseai_user: str | None = Header(None)) -> dict[str, Any]:
+        """Re-score every claim as a circuit candidate (runs senseai-circuits assess)."""
+        return candidates.derive(store, cfg, actor=person(x_senseai_user))
+
+    @app.post("/api/research/circuit-candidates/{cid:path}/decision")
+    def decide_candidate(
+        cid: str, body: CandidateDecisionBody, x_senseai_user: str | None = Header(None)
+    ) -> dict[str, Any]:
+        """A person moves a candidate: in_design, adopted (with the design), rejected, open."""
+        user = person(x_senseai_user)
+        must("candidate", cid, CircuitCandidate)
+        try:
+            c = candidates.decide(
+                store, cid, body.status, by=user, rationale=body.rationale, design_id=body.design_id
+            )
+        except LedgerError as e:
+            raise HTTPException(400, str(e)) from e
+        return c.model_dump()
+
+    @app.get("/api/research/circuit-candidates/{cid:path}")
+    def circuit_candidate(cid: str) -> dict[str, Any]:
+        """One candidate with its claims, passages and the senseai-circuits candidate@1 record."""
+        c: CircuitCandidate = must("candidate", cid, CircuitCandidate)
+        claims = []
+        for claim_id in c.claim_ids:
+            cl = store.must("claim", claim_id, Claim)
+            claims.append(
+                {
+                    "claim_id": cl.id,
+                    "library_path": cl.library_path,
+                    "value": cl.quantity.text(),
+                    "status": cl.status,
+                    "species": cl.species,
+                    "conditions": cl.conditions,
+                    "method": cl.method,
+                    "sources": [
+                        _source_view(s)
+                        for sid in cl.source_ids
+                        if (s := store.get("source", sid, Source))
+                    ],
+                    "passage": _passage_view(store, cl.passage_id) if cl.passage_id else None,
+                }
+            )
+        return c.model_dump() | {"claims": claims, "candidate": candidates.to_circuits(store, c)}
+
     # -- handoff to circuits (docs/HANDOFF.md) -------------------------------------------
 
     @app.get("/api/research/schema/handoff")
@@ -416,6 +482,8 @@ def create_app(
             "profiles_repo": str(cfg.profiles_repo) if cfg.profiles_repo else None,
             "profiles_sha": git_sha(cfg.profiles_repo) if cfg.profiles_repo else None,
             "github": bool(cfg.github_token),
+            "circuits_cmd": cfg.circuits_cmd,
+            "circuits": candidates.circuits_command(cfg) is not None,
         }
 
     # -- settings: outside services and whether their keys are set (values are never sent) --
