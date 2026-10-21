@@ -337,9 +337,12 @@ Where they disagree, the code wins.
    through `--profiles-repo`.
 5. **World prior provenance kinds** are `physics | measured | proposed`, not `measured |
    default`. The impact report shows the kind as written. `import senseai_world.prior` pulls in
-   torch (`prior/__init__.py` imports the model), so `impact/world.py` loads `prior/params.py` on
-   its own (it needs only PyYAML). When world is not installed, it falls back to a copy of
-   `params.py` from 8ec2cfd, which a test keeps in sync when world is present.
+   torch (`prior/__init__.py` imports the model), so `impact/world.py` loads only `prior/params.py`
+   (it needs nothing beyond PyYAML). It finds that file in the installed package, in the stack
+   checkout `$SENSEAI_STACK_DIR/world`, or at `SENSEAI_WORLD_PARAMS`. World is proprietary and this
+   repo is public, so no copy is vendored. If world is not on the machine, the impact record says
+   "not checked" rather than guessing. The tests use a small test double with the same interface
+   (`tests/fixtures/world/params.py`).
 6. **The felidae detection threshold is `confidence: high` in the YAML.** It is still
    `unverified` in the ledger: CITATIONS.md marks its source as read only as an abstract, and
    there is no full-text quote. `Claim.library_confidence` keeps the library's own label.
@@ -357,3 +360,33 @@ Where they disagree, the code wins.
 11. **Record details.** A claim imported from the library with no quote has `provenance: library`
     (the spec lists only pipeline, user and agent-proposed). An Approval's `target` is a pending
     action id plus a `target_kind` (`claim_revision | new_claim | hypothesis | proposal`).
+12. **PR workspace (D6).** The PR branch is made in a `git clone --shared` copy of the profiles
+    checkout, not in a `git worktree`. A worktree writes `.git/worktrees/` into the base checkout;
+    the shared clone writes nothing there. The branch name `research/<proposal-id>`, the token
+    push and `POST /repos/{o}/{r}/pulls` are as specified. Library edits also add the source to
+    `citations` and an `evidence` item (DOI, verbatim quote, section), which the library schema
+    defines for exactly this. The patched entry must pass `validate_entry` before anything is
+    pushed.
+13. **Recorded responses.** No API key was available while building, so the replay fixtures
+    (`tests/fixtures/recorded/*.json`) are written by hand in the API's message shape rather than
+    recorded live. They replay through the real SDK, as a Server-Sent Events stream over an
+    `httpx2` transport (anthropic 1.x uses `httpx2`). Setting `RESEARCH_RECORD_DIR` during a live
+    session saves every final message in that same shape, so live recordings can replace them.
+    The live smoke run (spec P3) has not been made: there was no key.
+14. **Strict tool schemas** use `anyOf: [T, null]` for optional fields. Strict mode supports
+    `anyOf`; JSON-Schema type arrays (`["string", "null"]`) are not in its supported list.
+15. **Curate move (P5).** `senseai_profiles.curate` became a deprecated alias in profiles: each
+    submodule *is* the moved module, and the import warns. `senseai-library` in profiles forwards
+    to senseai-research, or prints how to install it (`--help` exits 0 without it). Profiles keeps
+    its `curate` extra so existing installs still resolve. Research now depends on plain
+    `senseai-profiles` plus the curate libraries. Curate reads the profiles checkout from
+    `SENSEAI_PROFILES_REPO` (it used to find it relative to its own file), and its model call
+    goes through research's single client factory.
+16. **EC2 install (phase 6).** `scripts/install_research_ec2.sh` installs into the viewer's
+    shared `~/senseai/.venv` with `uv pip install --override`, so the stack's own checkouts under
+    `~/senseai/` win over the git pins in this package's dependencies (the same conflict the
+    viewer's setup avoids by installing them editable). The server runs under `nohup` from
+    `research-ctl.sh` rather than a systemd unit, so the install needs no root; it uses sudo only,
+    and only without a prompt, to add `RESEARCH_URL` to `/etc/senseai-viewer.env` and restart the
+    viewer. `tests/test_ec2_scripts.py` runs both scripts in a sandbox HOME, and with
+    `SENSEAI_VIEWER_CMD` set checks `/research` behind the viewer password.

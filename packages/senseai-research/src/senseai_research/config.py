@@ -30,8 +30,12 @@ class Settings:
     github_token: str | None = None
     github_repo: str = "senseai-institute/profiles"
     github_api: str = "https://api.github.com"
+    github_remote: str | None = None  # git push URL; default https://github.com/<repo>.git
+    github_base: str = "main"
     curate_s3: str | None = None
     model: str = DEFAULT_MODEL
+    stack_dir: Path | None = None
+    world_params: Path | None = None
 
     @property
     def db_path(self) -> Path:
@@ -50,6 +54,11 @@ class Settings:
         """Patch files and PR bodies written when there is no ``GITHUB_TOKEN``."""
         return self.data / "outbox"
 
+    @property
+    def stack(self) -> Path:
+        """Folder holding the SenseAI checkouts side by side (the viewer's convention)."""
+        return self.stack_dir or Path.home() / "senseai"
+
     def with_(self, **kw: object) -> Settings:
         return replace(self, **kw)  # type: ignore[arg-type]
 
@@ -66,7 +75,11 @@ class Settings:
             github_repo=os.environ.get("RESEARCH_GITHUB_REPO", "senseai-institute/profiles"),
             github_api=os.environ.get("RESEARCH_GITHUB_API", "https://api.github.com"),
             curate_s3=os.environ.get("RESEARCH_CURATE_S3") or None,
+            github_remote=os.environ.get("RESEARCH_GITHUB_REMOTE") or None,
+            github_base=os.environ.get("RESEARCH_GITHUB_BASE", "main"),
             model=os.environ.get("RESEARCH_MODEL", DEFAULT_MODEL),
+            stack_dir=_path("SENSEAI_STACK_DIR"),
+            world_params=_path("SENSEAI_WORLD_PARAMS"),
         )
 
 

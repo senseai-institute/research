@@ -11,8 +11,13 @@ requires-python = ">=3.11"  # senseai-profiles needs 3.11 (spec §13 says 3.10; 
 license = "Apache-2.0"
 dependencies = [
   # senseai-profiles is private and not on PyPI: pinned to the main the spec was built against.
-  "senseai-profiles[curate] @ git+https://github.com/senseai-institute/profiles@018d2d6009959d0b66a90f234ffcb4da3c0a059d#subdirectory=packages/senseai-profiles",
+  "senseai-profiles @ git+https://github.com/senseai-institute/profiles@018d2d6009959d0b66a90f234ffcb4da3c0a059d#subdirectory=packages/senseai-profiles",
+  # the curate pipeline (moved here from senseai_profiles.curate in phase 5)
+  "pint>=0.24",
+  "defusedxml>=0.7",
+  "pypdf>=5.0",
   "anthropic>=1.15",
+  "httpx2>=2.0",  # tests hand the SDK an httpx2 transport (recorded responses)
   "fastapi>=0.115",
   "uvicorn>=0.30",
   "sse-starlette>=2.1",
@@ -32,6 +37,7 @@ aws = ["boto3>=1.34"]
 dev = [
   "pytest>=8",
   "pytest-asyncio>=0.23",
+  "playwright==1.56.0",  # spec 11 in the browser (same pin as the viewer)
   "ruff>=0.6",
   "mypy>=1.11",
   "types-PyYAML",
@@ -40,6 +46,7 @@ dev = [
 
 [project.scripts]
 senseai-research = "senseai_research.cli:main"
+senseai-library = "senseai_research.curate.cli:main"
 
 [tool.hatch.metadata]
 allow-direct-references = true
@@ -55,6 +62,9 @@ target-version = "py311"
 select = ["E", "F", "I", "B", "UP", "N", "W", "RUF", "SIM"]
 ignore = ["RUF001", "RUF002", "RUF003", "N818"]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/curate/fixtures.py" = ["E501"]
+
 [tool.mypy]
 strict = true
 python_version = "3.11"
@@ -63,7 +73,7 @@ files = ["src"]
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["senseai_profiles", "senseai_profiles.*", "senseai_world", "senseai_world.*", "boto3", "boto3.*", "sse_starlette", "sse_starlette.*"]
+module = ["pint", "pint.*", "pypdf", "pypdf.*", "defusedxml", "defusedxml.*", "senseai_profiles", "senseai_profiles.*", "senseai_world", "senseai_world.*", "boto3", "boto3.*", "sse_starlette", "sse_starlette.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

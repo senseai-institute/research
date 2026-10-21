@@ -20,6 +20,9 @@ concurrency:
 
 env:
   PROFILES_SHA: 018d2d6009959d0b66a90f234ffcb4da3c0a059d
+  # The viewer with the Research page (senseai-institute/viewer PR "Research page"); switch to
+  # main once that PR is merged.
+  VIEWER_REF: claude/research-page
 
 jobs:
   check:
@@ -83,8 +86,26 @@ jobs:
           uv pip install -e ".[dev]"
       - run: uv run --no-sync mypy
         if: steps.tok.outputs.have == '1'
-      - name: pytest (everything)
+      - uses: actions/checkout@v4
+        if: steps.tok.outputs.have == '1'
+        with:
+          repository: senseai-institute/viewer
+          ref: ${{ env.VIEWER_REF }}
+          path: _viewer
+      - uses: actions/setup-node@v4
+        if: steps.tok.outputs.have == '1'
+        with:
+          node-version: "22"
+      - name: Build the viewer (for the browser scenario)
+        if: steps.tok.outputs.have == '1'
+        working-directory: _viewer/packages/senseai-viewer
+        run: |
+          uv sync --extra dev
+          cd web && npm ci && npm run build
+          cd .. && uv run playwright install --with-deps chromium
+      - name: pytest (everything, including spec 11 in the browser)
         if: steps.tok.outputs.have == '1'
         env:
           SENSEAI_PROFILES_REPO: ${{ github.workspace }}/_profiles
+          SENSEAI_VIEWER_CMD: ${{ github.workspace }}/_viewer/packages/senseai-viewer/.venv/bin/senseai-viewer
         run: uv run --no-sync pytest -q -rs

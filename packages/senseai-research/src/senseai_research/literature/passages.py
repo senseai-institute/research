@@ -16,7 +16,7 @@ CONTEXT = 600
 
 
 def normalise(text: str) -> str:
-    """Identical to ``senseai_profiles.curate.fetch.normalise``."""
+    """Identical to ``senseai_research.curate.fetch.normalise``."""
     return re.sub(r"\s+", " ", text).strip()
 
 
