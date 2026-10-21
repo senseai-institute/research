@@ -31,6 +31,7 @@ which keys are set and tests each one. It never shows a key's value.
 | IUCN Red List | Optional | `IUCN_API_TOKEN` | Conservation status of each species, shown on the review sheet. |
 | Studio connection | Optional | `RESEARCH_PROXY_TOKEN` | A shared secret Studio sends with every request, so the research server can trust the signed-in name Studio forwards. Set the same value on both services. |
 | GitHub | Optional | `GITHUB_TOKEN` | Opens the pull request on senseai-institute/profiles after a person approves a library change. Use a fine-grained token with Contents and Pull requests (read and write) on that one repository only. |
+| Circuits hand-off | Optional | `RESEARCH_CIRCUITS_REPO`, `RESEARCH_CIRCUITS_TOKEN` | Opens a pull request on senseai-circuits with the evidence package a person released (docs/HANDOFF.md). RESEARCH_CIRCUITS_REPO is owner/name, e.g. senseai-institute/circuits; the token needs Contents and Pull requests (read and write) on that repository. Without its own token it uses GITHUB_TOKEN. |
 | Amazon S3 | Optional | `RESEARCH_CURATE_S3`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | Copies ledger backups and the download cache to a bucket, so nothing is lost if the server's disk is. |
 
 ## Assistant
@@ -194,6 +195,16 @@ Opens the pull request on senseai-institute/profiles after a person approves a l
 - **Without it:** Approved changes are saved as a patch and a pull-request text to download, and someone opens the pull request by hand.
 - **Get a key:** https://github.com/settings/personal-access-tokens/new
 
+### Circuits hand-off
+
+Opens a pull request on senseai-circuits with the evidence package a person released (docs/HANDOFF.md). RESEARCH_CIRCUITS_REPO is owner/name, e.g. senseai-institute/circuits; the token needs Contents and Pull requests (read and write) on that repository. Without its own token it uses GITHUB_TOKEN.
+
+- **Needed:** Optional.
+- **Variable:** `RESEARCH_CIRCUITS_REPO`, not secret.
+- **Variable:** `RESEARCH_CIRCUITS_TOKEN` (or `GITHUB_TOKEN`), secret.
+- **Without it:** Released packages are saved on the server and served at /api/research/handoff/{clade}/released for circuits to download.
+- **Get a key:** https://github.com/settings/personal-access-tokens/new
+
 ## Backups
 
 ### Amazon S3
@@ -233,6 +244,8 @@ RESEARCH_PROXY_TOKEN=
 
 # Library changes
 GITHUB_TOKEN=
+RESEARCH_CIRCUITS_REPO=
+RESEARCH_CIRCUITS_TOKEN=
 
 # Backups
 RESEARCH_CURATE_S3=

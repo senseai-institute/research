@@ -153,6 +153,25 @@ def _github(env: Mapping[str, str], http: httpx.Client) -> Result:
     return Result(False, f"unexpected answer (HTTP {r.status_code})")
 
 
+def _circuits(env: Mapping[str, str], http: httpx.Client) -> Result:
+    api = env.get("RESEARCH_GITHUB_API") or "https://api.github.com"
+    repo = env.get("RESEARCH_CIRCUITS_REPO", "")
+    token = env.get("RESEARCH_CIRCUITS_TOKEN") or env.get("GITHUB_TOKEN") or ""
+    if not repo or not token:
+        return Result(False, "set RESEARCH_CIRCUITS_REPO and a token")
+    try:
+        r = http.get(f"{api}/repos/{repo}", headers={"Authorization": f"Bearer {token}"})
+    except httpx.HTTPError as e:
+        return Result(False, f"could not connect ({type(e).__name__})")
+    if r.is_success:
+        return Result(True, f"working; the token can see {repo}")
+    if r.status_code in (401, 403):
+        return Result(False, "the token was refused")
+    if r.status_code == 404:
+        return Result(False, f"the token cannot see {repo}; give it access to that repository")
+    return Result(False, f"unexpected answer (HTTP {r.status_code})")
+
+
 def _s3(env: Mapping[str, str], http: httpx.Client) -> Result:
     url = env.get("RESEARCH_CURATE_S3", "")
     if not url.startswith("s3://"):
@@ -413,6 +432,24 @@ INTEGRATIONS: tuple[Integration, ...] = (
         "https://github.com/settings/personal-access-tokens/new",
         (Var("GITHUB_TOKEN"),),
         _github,
+    ),
+    Integration(
+        "circuits",
+        "Circuits hand-off",
+        "Library changes",
+        "Opens a pull request on senseai-circuits with the evidence package a person released "
+        "(docs/HANDOFF.md). RESEARCH_CIRCUITS_REPO is owner/name, e.g. "
+        "senseai-institute/circuits; the token needs Contents and Pull requests (read and "
+        "write) on that repository. Without its own token it uses GITHUB_TOKEN.",
+        "optional",
+        "Released packages are saved on the server and served at "
+        "/api/research/handoff/{clade}/released for circuits to download.",
+        "https://github.com/settings/personal-access-tokens/new",
+        (
+            Var("RESEARCH_CIRCUITS_REPO", secret=False),
+            Var("RESEARCH_CIRCUITS_TOKEN", aliases=("GITHUB_TOKEN",)),
+        ),
+        _circuits,
     ),
     Integration(
         "s3",

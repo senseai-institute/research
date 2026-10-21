@@ -39,6 +39,10 @@ class Settings:
     circuits_cmd: str = "senseai-circuits"
     host: str = "127.0.0.1"
     proxy_token: str | None = None  # shared with Studio; required to listen beyond loopback
+    circuits_repo: str | None = None  # owner/name: open handoff PRs there (docs/HANDOFF.md)
+    circuits_remote: str | None = None  # git push URL; default https://github.com/<repo>.git
+    circuits_base: str = "main"
+    circuits_token: str | None = None  # defaults to github_token
 
     @property
     def db_path(self) -> Path:
@@ -86,6 +90,10 @@ class Settings:
             circuits_cmd=os.environ.get("SENSEAI_CIRCUITS_CMD") or "senseai-circuits",
             host=os.environ.get("RESEARCH_HOST") or "127.0.0.1",
             proxy_token=os.environ.get("RESEARCH_PROXY_TOKEN") or None,
+            circuits_repo=os.environ.get("RESEARCH_CIRCUITS_REPO") or None,
+            circuits_remote=os.environ.get("RESEARCH_CIRCUITS_REMOTE") or None,
+            circuits_base=os.environ.get("RESEARCH_CIRCUITS_BASE", "main"),
+            circuits_token=os.environ.get("RESEARCH_CIRCUITS_TOKEN") or None,
         )
 
 

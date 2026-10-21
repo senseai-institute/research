@@ -42,7 +42,8 @@
     "claim_revision",
     "new_claim",
     "hypothesis",
-    "proposal"
+    "proposal",
+    "handoff"
    ],
    "title": "Target Kind",
    "type": "string"

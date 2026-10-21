@@ -16,7 +16,16 @@ import yaml
 from senseai_research.ledger.models import Claim
 from senseai_research.ledger.store import Store
 
-KINDS = ("source", "passage", "hypothesis", "experiment", "impact", "proposal", "approval")
+KINDS = (
+    "source",
+    "passage",
+    "hypothesis",
+    "experiment",
+    "impact",
+    "proposal",
+    "approval",
+    "handoff",
+)
 
 
 def plural(kind: str) -> str:

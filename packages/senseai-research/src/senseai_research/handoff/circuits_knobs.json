@@ -1,0 +1,301 @@
+[
+  {
+    "name": "cs.sigma_center_deg",
+    "unit": "deg",
+    "default": 0.5,
+    "range": [
+      0.05,
+      10.0
+    ],
+    "kind": "measured",
+    "source": "cat retinal ganglion cells near area centralis: Gaussian centre of a difference-of-Gaussians receptive field (Rodieck 1965; Enroth-Cugell & Robson 1966); fitted centre radii are of order 0.5-1 deg, sigma = radius / sqrt(2). Felid value to verify in profiles",
+    "doc": "Standard deviation of the centre Gaussian, in visual angle.",
+    "type": "float"
+  },
+  {
+    "name": "cs.surround_ratio",
+    "unit": "ratio",
+    "default": 5.0,
+    "range": [
+      1.5,
+      20.0
+    ],
+    "kind": "measured",
+    "source": "cat ganglion cells: surround Gaussian several times wider than the centre (Enroth-Cugell & Robson 1966; Rodieck 1965). Felid value to verify in profiles",
+    "doc": "sigma_surround / sigma_center.",
+    "type": "float"
+  },
+  {
+    "name": "cs.gain_center",
+    "unit": "ratio",
+    "default": 1.0,
+    "range": [
+      0.0,
+      10.0
+    ],
+    "kind": "physics",
+    "source": "unit choice: integrated centre weight",
+    "doc": "Integrated weight of the centre Gaussian.",
+    "type": "float"
+  },
+  {
+    "name": "cs.gain_surround",
+    "unit": "ratio",
+    "default": 1.0,
+    "range": [
+      0.0,
+      10.0
+    ],
+    "kind": "physics",
+    "source": "balanced centre and surround: a uniform field gives zero response (Kuffler 1953 antagonism)",
+    "doc": "Integrated weight of the surround Gaussian.",
+    "type": "float"
+  },
+  {
+    "name": "cs.adapt_tau_ms",
+    "unit": "ms",
+    "default": 100.0,
+    "range": [
+      1.0,
+      10000.0
+    ],
+    "kind": "proposed",
+    "source": "divisive gain control of the retina; no felid time constant in the library",
+    "doc": "Time constant of the running mean each channel is divided by.",
+    "type": "float"
+  },
+  {
+    "name": "emd.delay_tau_ms",
+    "unit": "ms",
+    "default": 35.0,
+    "range": [
+      1.0,
+      1000.0
+    ],
+    "kind": "measured",
+    "source": "first-order low-pass delay of the Hassenstein-Reichardt detector, of order 35 ms in Diptera (Borst & Egelhaaf 1989; Borst, Haag & Reiff 2010). Felid temporal integration is a library open question",
+    "doc": "Time constant of the delay filter.",
+    "type": "float"
+  },
+  {
+    "name": "emd.spacing_px",
+    "unit": "px",
+    "default": 1,
+    "range": [
+      1,
+      8
+    ],
+    "kind": "physics",
+    "source": "sampling base of the correlator: neighbouring receptive fields, one grid cell apart",
+    "doc": "Distance between the two inputs of each correlator, in grid cells.",
+    "type": "int"
+  },
+  {
+    "name": "emd.conf_floor",
+    "unit": "ratio",
+    "default": 0.01,
+    "range": [
+      1e-06,
+      1.0
+    ],
+    "kind": "physics",
+    "source": "noise floor of the correlator energy, in adapted retina units",
+    "doc": "Correlator energy at which flow confidence is 0.5.",
+    "type": "float"
+  },
+  {
+    "name": "lgmd.inhib_spread_px",
+    "unit": "px",
+    "default": 1.0,
+    "range": [
+      0.25,
+      8.0
+    ],
+    "kind": "proposed",
+    "source": "lateral inhibition spreads to neighbouring units (Rind & Bramwell 1994); Gaussian spread width not fitted for a felid",
+    "doc": "Standard deviation of the lateral inhibition kernel, in grid cells.",
+    "type": "float"
+  },
+  {
+    "name": "lgmd.inhib_delay_ticks",
+    "unit": "tick",
+    "default": 1,
+    "range": [
+      1,
+      8
+    ],
+    "kind": "physics",
+    "source": "inhibition reaches a unit one step after the excitation that caused it (Rind & Bramwell 1994)",
+    "doc": "Delay of the lateral inhibition.",
+    "type": "int"
+  },
+  {
+    "name": "lgmd.w_inhib",
+    "unit": "ratio",
+    "default": 0.5,
+    "range": [
+      0.0,
+      4.0
+    ],
+    "kind": "proposed",
+    "source": "weight of lateral inhibition against excitation (Rind & Bramwell 1994; Yue & Rind 2006); no fitted value",
+    "doc": "S = relu(E - w_inhib * I).",
+    "type": "float"
+  },
+  {
+    "name": "lgmd.ffi_threshold",
+    "unit": "ratio",
+    "default": 0.15,
+    "range": [
+      0.0,
+      1.0
+    ],
+    "kind": "proposed",
+    "source": "feed-forward inhibition gates the LGMD during whole-field motion (Yue & Rind 2006); threshold as a fraction of the field active is a placeholder",
+    "doc": "Mean excitation over the field above which the LGMD is silenced.",
+    "type": "float"
+  },
+  {
+    "name": "lgmd.ttc_alpha",
+    "unit": "1/deg",
+    "default": 0.08,
+    "range": [
+      0.001,
+      1.0
+    ],
+    "kind": "measured",
+    "source": "locust LGMD: firing rate eta(t) = C * theta_dot * exp(-alpha * theta) (Gabbiani, Krapp & Laurent 1999; Gabbiani et al. 2002); eta peaks at theta = 2/alpha, here 25 deg. Value to verify against the paper",
+    "doc": "Angular-size decay of the eta function; the spike fires when theta reaches 2/alpha.",
+    "type": "float"
+  },
+  {
+    "name": "lgmd.ego_cancel",
+    "unit": "bool",
+    "default": true,
+    "range": [
+      false,
+      true
+    ],
+    "kind": "physics",
+    "source": "self-motion predicts image motion; the inhibition is advected by the ego-yaw shift so rotation does not loom",
+    "doc": "Advect the delayed excitation by the ego-yaw image shift before it inhibits.",
+    "type": "bool"
+  },
+  {
+    "name": "x.w_loom",
+    "unit": "ratio",
+    "default": 0.5,
+    "range": [
+      0.0,
+      10.0
+    ],
+    "kind": "proposed",
+    "source": "looming-escape literature; no felid value in library",
+    "doc": "r *= 1 + w_loom * loom, loom = dt / ttc per bearing.",
+    "type": "float"
+  },
+  {
+    "name": "x.absence_weight",
+    "unit": "ratio",
+    "default": 1.0,
+    "range": [
+      0.0,
+      10.0
+    ],
+    "kind": "physics",
+    "source": "\u2014",
+    "doc": "Weight of the absence term (predicted events that did not arrive) in global surprise.",
+    "type": "float"
+  },
+  {
+    "name": "x.norm_alpha",
+    "unit": "1/tick",
+    "default": 0.01,
+    "range": [
+      1e-06,
+      1.0
+    ],
+    "kind": "physics",
+    "source": "shared with senseai-world SurpriseConfig.norm_alpha (EMA rate of the running normalisers)",
+    "doc": "EMA rate of the per-cell scale and of the running normalisers.",
+    "type": "float"
+  },
+  {
+    "name": "ts.sigma_bearing_deg",
+    "unit": "deg",
+    "default": 5.0,
+    "range": [
+      0.1,
+      90.0
+    ],
+    "kind": "measured",
+    "source": "felidae.senses.hearing.spatial_resolution (Heffner & Heffner 1988)",
+    "doc": "Spatial tolerance of the token matcher.",
+    "type": "float"
+  },
+  {
+    "name": "ts.integration_ticks",
+    "unit": "tick",
+    "default": 3,
+    "range": [
+      1,
+      1000
+    ],
+    "kind": "proposed",
+    "source": "felid temporal integration / flicker fusion; library open question",
+    "doc": "Ticks over which a token's own velocity is integrated (M2, M7).",
+    "type": "int"
+  },
+  {
+    "name": "ts.match_gate",
+    "unit": "sigma^2",
+    "default": 9.0,
+    "range": [
+      0.1,
+      1000.0
+    ],
+    "kind": "physics",
+    "source": "3-sigma gate",
+    "doc": "Match cost above which two tokens are not the same thing.",
+    "type": "float"
+  },
+  {
+    "name": "ts.w_what",
+    "unit": "ratio",
+    "default": 1.0,
+    "range": [
+      0.0,
+      100.0
+    ],
+    "kind": "physics",
+    "source": "unit choice; both terms are O(1)",
+    "doc": "Weight of the content distance against the angular distance in the match cost (M3).",
+    "type": "float"
+  },
+  {
+    "name": "ts.w_against",
+    "unit": "ratio",
+    "default": 0.5,
+    "range": [
+      0.0,
+      10.0
+    ],
+    "kind": "proposed",
+    "source": "prey-motion preference; felidae.behaviours.pounce is qualitative",
+    "doc": "Boost for tokens moving against the ego-flow (M6).",
+    "type": "float"
+  },
+  {
+    "name": "ts.min_flow_matches",
+    "unit": "count",
+    "default": 8,
+    "range": [
+      1,
+      100000
+    ],
+    "kind": "physics",
+    "source": "robust-median sample size",
+    "doc": "Matches needed before the token-flow ego-yaw estimate is trusted.",
+    "type": "int"
+  }
+]

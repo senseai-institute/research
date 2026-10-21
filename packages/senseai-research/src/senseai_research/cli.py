@@ -106,7 +106,12 @@ def cmd_schema(a: argparse.Namespace, cfg: Settings) -> int:
         (out / f"{n.lower()}.schema.json").write_text(
             json.dumps(model.model_json_schema(), indent=1, sort_keys=True) + "\n"
         )
-    print(f"wrote {len(names)} schemas under {out}")
+    from senseai_research.handoff import schema as handoff_schema
+
+    (out / "handoff.schema.json").write_text(
+        json.dumps(handoff_schema(), indent=1, sort_keys=True) + "\n"
+    )
+    print(f"wrote {len(names) + 1} schemas under {out}")
     return 0
 
 
@@ -310,6 +315,71 @@ def cmd_approve(a: argparse.Namespace, cfg: Settings) -> int:
 @command("reject", "reject a pending change (records who and why)", _decide_args)
 def cmd_reject(a: argparse.Namespace, cfg: Settings) -> int:
     return _decide(a, cfg, "reject")
+
+
+def _handoff_args(p: argparse.ArgumentParser) -> None:
+    p.add_argument("clade", help="e.g. felidae")
+    p.add_argument(
+        "--min-readiness",
+        choices=("ready", "provisional"),
+        default="provisional",
+        help="the least readiness a value needs to be passed to circuits",
+    )
+    p.add_argument("--out", help="write the package JSON here")
+    p.add_argument("--json", action="store_true", help="print the package JSON")
+    p.add_argument(
+        "--propose", action="store_true", help="ask for a release (then `approve` its action)"
+    )
+    p.add_argument("--user", default=None, help="your name, with --propose (default: $USER)")
+
+
+@command(
+    "handoff",
+    "what the evidence gives circuits: quality, estimates, gaps (docs/HANDOFF.md)",
+    _handoff_args,
+)
+def cmd_handoff(a: argparse.Namespace, cfg: Settings) -> int:
+    from senseai_research import handoff
+
+    store = open_store(cfg)
+    try:
+        h = handoff.build(store, cfg, a.clade, policy=handoff.Policy(min_readiness=a.min_readiness))
+    except handoff.HandoffError as e:
+        raise SystemExit(str(e)) from e
+    if a.out:
+        Path(a.out).write_text(h.text())
+    if a.json:
+        print(h.text(), end="")
+    else:
+        for line in h.summary:
+            print(line)
+        print()
+        for k in h.knobs:
+            est = k.estimate
+            tag = est.readiness if est else "no literature"
+            print(f"  {k.knob:<22} {tag:<13} {k.sentence}")
+            if est and est.value is not None:
+                for s in est.sentences:
+                    print(f"  {'':<36}- {s}")
+        if h.gaps:
+            print("\nGaps:")
+            for g in h.gaps:
+                print(f"  - {g.knob} ({g.kind}): {g.sentence} {g.ask}")
+        print(f"\ndigest {h.digest}")
+    if a.propose:
+        import getpass
+
+        from senseai_research.actions import propose_handoff
+
+        act = propose_handoff(
+            store,
+            cfg,
+            clade=a.clade,
+            min_readiness=a.min_readiness,
+            actor=f"user:{a.user or getpass.getuser()}",
+        )
+        print(f"\nRelease requested: approve with `senseai-research approve {act.id} ...`")
+    return 0
 
 
 def _agent_doc_args(p: argparse.ArgumentParser) -> None:
