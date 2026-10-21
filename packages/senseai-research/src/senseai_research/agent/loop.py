@@ -59,6 +59,28 @@ PRICES = {"input": 4.0, "output": 20.0, "cache_read": 0.20, "cache_write": 5.0}
 Emit = Callable[[str, dict[str, Any]], None]
 
 
+def api_reason(e: anthropic.APIStatusError) -> str:
+    """The reason the API gave (``error.message`` of its body), shortened; never a credential."""
+    body = e.body if isinstance(e.body, dict) else {}
+    err = body.get("error")
+    reason = str(err.get("message") or "").strip() if isinstance(err, dict) else ""
+    return reason if len(reason) <= 300 else reason[:297] + "..."
+
+
+def status_message(e: anthropic.APIStatusError) -> str:
+    """What the chat shows when the API answers with an error status."""
+    reason = api_reason(e)
+    msg = f"The model service answered {e.status_code}"
+    msg += f": {reason}" if reason else "."
+    if "credit balance" in reason.lower():
+        msg += " Add credits at https://console.anthropic.com/settings/billing."
+    elif e.status_code in (401, 403):
+        msg += " Check ANTHROPIC_API_KEY on the research server."
+    elif e.status_code == 404 or "model" in reason.lower():
+        msg += " Check RESEARCH_MODEL on the research server (unset uses the default)."
+    return msg
+
+
 def request_params(cfg: Settings, messages: list[dict[str, Any]]) -> dict[str, Any]:
     """Everything sent to ``client.beta.messages.stream`` (also used to check request shape)."""
     return {
@@ -228,7 +250,7 @@ class AgentLoop:
                     break
                 continue
             except anthropic.APIStatusError as e:
-                emit("error", {"message": f"The model service answered {e.status_code}."})
+                emit("error", {"message": status_message(e), "code": f"http_{e.status_code}"})
                 res.stop = "error"
                 break
             except anthropic.APIConnectionError:
