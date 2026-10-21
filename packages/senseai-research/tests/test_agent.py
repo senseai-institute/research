@@ -278,3 +278,38 @@ def test_no_api_key_is_said_plainly(
         set_client_factory(None)
     assert r.stop == "error"
     assert ("error", {"message": NO_KEY, "code": "no_api_key"}) in events
+
+
+def test_an_api_error_shows_the_reason_the_api_gave(store: Store, settings: Settings) -> None:
+    import anthropic
+    import httpx2
+
+    reason = "Your credit balance is too low to access the Anthropic API."
+
+    def answer(request: httpx2.Request) -> httpx2.Response:
+        body = {"type": "error", "error": {"type": "invalid_request_error", "message": reason}}
+        return httpx2.Response(400, json=body)
+
+    set_client_factory(
+        lambda: anthropic.Anthropic(
+            api_key="sk-test",
+            max_retries=0,
+            http_client=httpx2.Client(transport=httpx2.MockTransport(answer)),
+        )
+    )
+    try:
+        agent = Agent(store, settings, offline=True)
+        conv = agent.new_conversation("user:ana")
+        events: list[tuple[str, dict[str, Any]]] = []
+        r = agent.send(conv, "hello", emit=lambda k, d: events.append((k, d)))
+    finally:
+        set_client_factory(None)
+    assert r.stop == "error"
+    errors = [d for k, d in events if k == "error"]
+    assert errors == [
+        {
+            "message": f"The model service answered 400: {reason} "
+            "Add credits at https://console.anthropic.com/settings/billing.",
+            "code": "http_400",
+        }
+    ]

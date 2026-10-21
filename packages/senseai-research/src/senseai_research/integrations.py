@@ -130,7 +130,15 @@ def _anthropic(env: Mapping[str, str], http: httpx.Client) -> Result:
     except Exception as e:  # any SDK error: auth, permission, network
         if missing_credentials(e):
             return Result(False, "no key: set ANTHROPIC_API_KEY")
-        return Result(False, f"the model {model} is not reachable ({type(e).__name__})")
+        import anthropic
+
+        from senseai_research.agent.loop import api_reason
+
+        why = api_reason(e) if isinstance(e, anthropic.APIStatusError) else ""
+        return Result(
+            False,
+            f"the model {model} is not reachable ({type(e).__name__}{': ' + why if why else ''})",
+        )
     return Result(True, f"working; model {model} is available")
 
 
